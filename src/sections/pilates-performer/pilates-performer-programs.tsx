@@ -205,7 +205,7 @@ export default function PilatesPerformerPrograms() {
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
-              href="/join/select-club"
+              disabled
               sx={{
                 bgcolor: RED,
                 color: '#fff',

@@ -8,6 +8,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 // routes
 import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
 // components
 import Iconify from 'src/components/iconify';
 import { MotionViewport, varFade } from 'src/components/animate';
@@ -86,9 +87,9 @@ export default function HomeAdvertisement() {
         <Button
           size="large"
           variant="contained"
-          target="_blank"
-          rel="noopener"
-          href={paths.minimalUI}
+          component={RouterLink}
+          href={paths.about}
+          preserveSearch
           endIcon={<Iconify icon="solar:arrow-right-up-bold" width={18} />}
           sx={{
             borderRadius: 0, // Kotak tajam

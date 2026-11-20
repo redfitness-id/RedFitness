@@ -13,6 +13,8 @@ import { useResponsive } from 'src/hooks/use-responsive';
 // components
 import Iconify from 'src/components/iconify';
 import { MotionViewport, varFade } from 'src/components/animate';
+import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
 
 // ----------------------------------------------------------------------
 
@@ -167,6 +169,9 @@ export default function HomeHugePackElements() {
             </Typography>
 
             <Button
+              component={RouterLink}
+              href={paths.about}
+              preserveSearch
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" width={18} />}
@@ -187,7 +192,7 @@ export default function HomeHugePackElements() {
                 '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' },
               }}
             >
-              Join Us Now
+              View Membership
             </Button>
           </Box>
         </Stack>

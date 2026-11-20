@@ -17,6 +17,8 @@ import Iconify from 'src/components/iconify';
 import { MotionViewport, varFade } from 'src/components/animate';
 // supabase
 import { supabase } from 'src/utils/supabase';
+import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
 
 // ----------------------------------------------------------------------
 
@@ -298,6 +300,9 @@ export default function HomeClubNearby() {
         <Stack alignItems="center" sx={{ mt: { xs: 6, md: 8 } }}>
           <m.div variants={varFade().inUp}>
             <Button
+              component={RouterLink}
+              href={paths.clubs}
+              preserveSearch
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" width={18} />}

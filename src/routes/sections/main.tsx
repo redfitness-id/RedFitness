@@ -1,11 +1,11 @@
 import { lazy, Suspense } from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 // layouts
 import MainLayout from 'src/layouts/main';
 import SimpleLayout from 'src/layouts/simple';
 import CompactLayout from 'src/layouts/compact';
 import AdminLayout from 'src/layouts/admin';
-import BookingLayout from 'src/layouts/booking';
+import { paths } from 'src/routes/paths';
 // components
 import { SplashScreen } from 'src/components/loading-screen';
 // admin auth
@@ -26,11 +26,6 @@ const ClubsPage = lazy(() => import('src/pages/clubs'));
 const HighligthPage = lazy(() => import('src/pages/hightligth'));
 const ComingSoonPage = lazy(() => import('src/pages/coming-soon'));
 const MaintenancePage = lazy(() => import('src/pages/maintenance'));
-const SelectClubPage = lazy(() => import('src/pages/select-club'));
-const SelectPlanPage = lazy(() => import('src/pages/select-plan'));
-const YourDetailsPage = lazy(() => import('src/pages/your-details'));
-const PaymentPage = lazy(() => import('src/pages/payment'));
-const LoginPage = lazy(() => import('src/pages/login'));
 const PilatesPerformerPage = lazy(() => import('src/pages/pilates-performer'));
 const RedSeitaiPage = lazy(() => import('src/pages/red-seitai'));
 
@@ -45,6 +40,12 @@ const AdminContentPage = lazy(() => import('src/pages/admin/content'));
 const AdminRegistrationsPage = lazy(() => import('src/pages/admin/registrations'));
 
 // ----------------------------------------------------------------------
+
+function LegacyPublicRedirect({ pathname }: { pathname: string }) {
+  const { search } = useLocation();
+
+  return <Navigate to={{ pathname, search }} replace />;
+}
 
 export const mainRoutes = [
   {
@@ -67,32 +68,11 @@ export const mainRoutes = [
       { path: 'red-seitai', element: <RedSeitaiPage /> },
     ],
   },
-  {
-    path: 'join',
-    element: (
-      <BookingLayout>
-        <Suspense fallback={<SplashScreen />}>
-          <Outlet />
-        </Suspense>
-      </BookingLayout>
-    ),
-    children: [
-      { path: 'select-club', element: <SelectClubPage /> },
-      { path: 'select-plan', element: <SelectPlanPage /> },
-      { path: 'details', element: <YourDetailsPage /> },
-      { path: 'payment', element: <PaymentPage /> },
-    ],
-  },
-  {
-    path: 'login',
-    element: (
-      <BookingLayout>
-        <Suspense fallback={<SplashScreen />}>
-          <LoginPage />
-        </Suspense>
-      </BookingLayout>
-    ),
-  },
+  ...[paths.dashboard.root, '/join', ...Object.values(paths.join)].map((path) => ({
+    path,
+    element: <LegacyPublicRedirect pathname={paths.about} />,
+  })),
+  { path: paths.login, element: <LegacyPublicRedirect pathname="/" /> },
   {
     element: (
       <CompactLayout>

@@ -1,4 +1,6 @@
 import { m } from 'framer-motion';
+import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
 // @mui
 import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -52,6 +54,9 @@ export default function ClassesTimetableCTA() {
                 </Typography>
 
                 <Button
+                component={RouterLink}
+                href={paths.timetable}
+                preserveSearch
                 variant="contained"
                 size="large"
                 endIcon={<Iconify icon="solar:arrow-right-up-bold" />}

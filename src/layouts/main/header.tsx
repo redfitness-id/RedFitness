@@ -19,7 +19,7 @@ import { navConfig } from './config-navigation';
 import NavMobile from './nav/mobile';
 import NavDesktop from './nav/desktop';
 import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
+import { RouterLink } from 'src/routes/components';
 
 // ----------------------------------------------------------------------
 
@@ -32,7 +32,6 @@ export default function Header() {
   const theme = useTheme();
   const mdUp = useResponsive('up', 'md');
   const offsetTop = useOffSetTop(HEADER.H_DESKTOP);
-  const router = useRouter();
 
   return (
     <AppBar
@@ -88,23 +87,24 @@ export default function Header() {
           {/* 3. ACTIONS (Kanan) */}
           <Stack direction="row" alignItems="center" spacing={1.5}>
             <Stack direction="row" spacing={1.5} sx={{ color: 'common.white', alignItems: 'center' }}>
-              <Iconify
-                icon="solar:calendar-minimalistic-bold"
-                width={20}
-                sx={{ cursor: 'pointer', transition: 'color 0.2s', '&:hover': { color: RED } }}
-                onClick={() => router.push(paths.timetable)}
-              />
-              <Iconify
-                icon="solar:map-point-bold"
-                width={20}
-                sx={{ cursor: 'pointer', transition: 'color 0.2s', '&:hover': { color: RED } }}
-                onClick={() => router.push(paths.clubs)}
-              />
-              <Iconify
-                icon="solar:user-circle-bold"
-                width={20}
-                sx={{ cursor: 'pointer', transition: 'color 0.2s', '&:hover': { color: RED } }}
-              />
+              <Box
+                component={RouterLink}
+                href={paths.timetable}
+                preserveSearch
+                aria-label="Timetable"
+                sx={{ display: 'flex', color: 'inherit', '&:hover': { color: RED } }}
+              >
+                <Iconify icon="solar:calendar-minimalistic-bold" width={20} />
+              </Box>
+              <Box
+                component={RouterLink}
+                href={paths.clubs}
+                preserveSearch
+                aria-label="Club Finder"
+                sx={{ display: 'flex', color: 'inherit', '&:hover': { color: RED } }}
+              >
+                <Iconify icon="solar:map-point-bold" width={20} />
+              </Box>
 
               {/* Language Selector — hidden on smaller desktops to save space */}
               <Typography

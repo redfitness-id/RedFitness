@@ -237,7 +237,8 @@ export default function HomeHero() {
 
             <Button
               component={RouterLink}
-              href={paths.dashboard.root}
+              href={paths.about}
+              preserveSearch
               size="large"
               variant="contained"
               startIcon={<Iconify icon="eva:flash-fill" width={24} />}
@@ -255,15 +256,15 @@ export default function HomeHero() {
                 },
               }}
             >
-              Join Now
+              View Membership
             </Button>
 
             <Link
               color="inherit"
               variant="caption"
-              target="_blank"
-              rel="noopener"
-              href={paths.freeUI}
+              component={RouterLink}
+              href={paths.clubs}
+              preserveSearch
               sx={{
                 color: alpha('#fff', 0.4),
                 textDecoration: 'underline',
@@ -272,8 +273,8 @@ export default function HomeHero() {
                 '&:hover': { color: RED },
               }}
             >
-              <Iconify icon="eva:external-link-fill" width={16} sx={{ mr: 0.5 }} />
-              Other Membership Plans
+              <Iconify icon="eva:pin-outline" width={16} sx={{ mr: 0.5 }} />
+              Find a Club
             </Link>
           </Stack>
         </Stack>

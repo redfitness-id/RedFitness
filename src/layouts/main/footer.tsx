@@ -33,35 +33,29 @@ const NAV_LINKS = [
   {
     headline: 'MEMBERSHIP',
     children: [
-      { name: 'Membership', href: '#' },
-      { name: 'Join Online', href: '#' },
-      { name: 'Corporate', href: '#' },
-      { name: 'Membership Privileges', href: '#' },
+      { name: 'Membership', href: paths.about },
     ],
   },
   {
     headline: 'CLUBS & CLASSES',
     children: [
-      { name: 'Classes', href: '#' },
-      { name: 'Club Finder', href: '#' },
-      { name: 'Timetable', href: '#' },
-      { name: 'Mobile App', href: '#' },
+      { name: 'Classes', href: paths.classes },
+      { name: 'Club Finder', href: paths.clubs },
+      { name: 'Timetable', href: paths.timetable },
     ],
   },
   {
     headline: 'OUR COMPANY',
     children: [
       { name: 'Why Red Fitness', href: paths.about },
-      { name: 'Blog', href: '#' },
-      { name: 'Highlights', href: '#' },
-      { name: 'FAQ', href: '#' },
+      { name: 'Highlights', href: paths.highligth },
     ],
   },
   {
     headline: 'GET IN TOUCH',
     children: [
-      { name: 'Contact Us', href: paths.contact },
-      { name: 'Careers', href: '#' },
+      { name: 'Personal Training', href: paths.contact },
+      { name: 'Careers', href: paths.career },
     ],
   },
 ];
@@ -123,6 +117,7 @@ export default function Footer() {
                 <TextField
                   fullWidth
                   hiddenLabel
+                  disabled
                   placeholder="EMAIL ADDRESS"
                   variant="filled"
                   sx={{
@@ -144,13 +139,14 @@ export default function Footer() {
                 />
                 
                 <FormControlLabel
-                  control={<Checkbox size="small" sx={{ color: alpha('#fff', 0.3), '&.Mui-checked': { color: RED } }} />}
+                  control={<Checkbox disabled size="small" sx={{ color: alpha('#fff', 0.3), '&.Mui-checked': { color: RED } }} />}
                   label={<Typography variant="caption" sx={{ color: alpha('#fff', 0.5) }}>Are you an existing customer?</Typography>}
                   sx={{ ml: 0 }}
                 />
 
                 <Button
                   variant="contained"
+                  disabled
                   endIcon={<Iconify icon="solar:arrow-right-up-bold" width={18} />}
                   sx={{
                     bgcolor: RED,
@@ -196,6 +192,7 @@ export default function Footer() {
                           key={link.name}
                           component={RouterLink}
                           href={link.href}
+                          preserveSearch
                           color="inherit"
                           variant="body2"
                           sx={{ 
@@ -230,17 +227,18 @@ export default function Footer() {
           </Typography>
 
           <Stack direction="row" spacing={1.5} alignItems="center">
-            <Link href="#" color="inherit" variant="caption" sx={{ color: alpha('#fff', 0.4), '&:hover': { color: RED } }}>Terms & Conditions</Link>
+            <Typography variant="caption" sx={{ color: alpha('#fff', 0.4) }}>Terms & Conditions</Typography>
             <Typography variant="caption" sx={{ color: alpha('#fff', 0.2) }}>|</Typography>
-            <Link href="#" color="inherit" variant="caption" sx={{ color: alpha('#fff', 0.4), '&:hover': { color: RED } }}>Club Rules</Link>
+            <Typography variant="caption" sx={{ color: alpha('#fff', 0.4) }}>Club Rules</Typography>
             <Typography variant="caption" sx={{ color: alpha('#fff', 0.2) }}>|</Typography>
-            <Link href="#" color="inherit" variant="caption" sx={{ color: alpha('#fff', 0.4), '&:hover': { color: RED } }}>Privacy Policy</Link>
+            <Typography variant="caption" sx={{ color: alpha('#fff', 0.4) }}>Privacy Policy</Typography>
           </Stack>
 
           <Stack direction="row" spacing={0.5}>
             {['eva:facebook-fill', 'ant-design:instagram-filled', 'ant-design:youtube-filled'].map((icon) => (
               <IconButton 
-                key={icon} 
+                key={icon}
+                disabled
                 sx={{ 
                   color: alpha('#fff', 0.4), 
                   transition: 'color 0.2s',
