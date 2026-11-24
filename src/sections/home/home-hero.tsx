@@ -238,7 +238,7 @@ export default function HomeHero() {
             <Button
               component={RouterLink}
               href={paths.about}
-              preserveSearch
+              preserveCampaignSearch
               size="large"
               variant="contained"
               startIcon={<Iconify icon="eva:flash-fill" width={24} />}
@@ -264,7 +264,7 @@ export default function HomeHero() {
               variant="caption"
               component={RouterLink}
               href={paths.clubs}
-              preserveSearch
+              preserveCampaignSearch
               sx={{
                 color: alpha('#fff', 0.4),
                 textDecoration: 'underline',

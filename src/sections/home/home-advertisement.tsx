@@ -89,7 +89,7 @@ export default function HomeAdvertisement() {
           variant="contained"
           component={RouterLink}
           href={paths.about}
-          preserveSearch
+          preserveCampaignSearch
           endIcon={<Iconify icon="solar:arrow-right-up-bold" width={18} />}
           sx={{
             borderRadius: 0, // Kotak tajam

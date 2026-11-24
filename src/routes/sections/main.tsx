@@ -6,6 +6,7 @@ import SimpleLayout from 'src/layouts/simple';
 import CompactLayout from 'src/layouts/compact';
 import AdminLayout from 'src/layouts/admin';
 import { paths } from 'src/routes/paths';
+import { getCampaignSearch } from 'src/routes/campaign-search';
 // components
 import { SplashScreen } from 'src/components/loading-screen';
 // admin auth
@@ -44,7 +45,7 @@ const AdminRegistrationsPage = lazy(() => import('src/pages/admin/registrations'
 function LegacyPublicRedirect({ pathname }: { pathname: string }) {
   const { search } = useLocation();
 
-  return <Navigate to={{ pathname, search }} replace />;
+  return <Navigate to={{ pathname, search: getCampaignSearch(search) }} replace />;
 }
 
 export const mainRoutes = [

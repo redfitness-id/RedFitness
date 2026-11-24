@@ -171,7 +171,7 @@ export default function HomeHugePackElements() {
             <Button
               component={RouterLink}
               href={paths.about}
-              preserveSearch
+              preserveCampaignSearch
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" width={18} />}

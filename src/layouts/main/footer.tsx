@@ -192,7 +192,7 @@ export default function Footer() {
                           key={link.name}
                           component={RouterLink}
                           href={link.href}
-                          preserveSearch
+                          preserveCampaignSearch
                           color="inherit"
                           variant="body2"
                           sx={{ 

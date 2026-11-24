@@ -56,7 +56,7 @@ export default function ClassesTimetableCTA() {
                 <Button
                 component={RouterLink}
                 href={paths.timetable}
-                preserveSearch
+                preserveCampaignSearch
                 variant="contained"
                 size="large"
                 endIcon={<Iconify icon="solar:arrow-right-up-bold" />}

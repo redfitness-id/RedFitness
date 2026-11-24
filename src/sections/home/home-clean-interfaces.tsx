@@ -302,7 +302,7 @@ export default function HomeClubNearby() {
             <Button
               component={RouterLink}
               href={paths.clubs}
-              preserveSearch
+              preserveCampaignSearch
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" width={18} />}

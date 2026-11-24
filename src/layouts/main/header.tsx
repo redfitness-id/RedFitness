@@ -90,7 +90,7 @@ export default function Header() {
               <Box
                 component={RouterLink}
                 href={paths.timetable}
-                preserveSearch
+                preserveCampaignSearch
                 aria-label="Timetable"
                 sx={{ display: 'flex', color: 'inherit', '&:hover': { color: RED } }}
               >
@@ -99,7 +99,7 @@ export default function Header() {
               <Box
                 component={RouterLink}
                 href={paths.clubs}
-                preserveSearch
+                preserveCampaignSearch
                 aria-label="Club Finder"
                 sx={{ display: 'flex', color: 'inherit', '&:hover': { color: RED } }}
               >
