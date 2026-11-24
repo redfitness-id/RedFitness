@@ -133,7 +133,11 @@ const campaign = '?utm_source=fixture&gclid=fixture';
         await page.getByRole('link',{name:'View Membership',exact:true}).first().click();
         await page.waitForURL(`${base}/membership${campaign}`);
         await page.waitForFunction(() => document.title.startsWith('Gym Membership'));
-        await page.locator('header').getByRole('link',{name:'Club Finder'}).click();
+        const headerClub = page.locator('header').getByRole('link',{name:'Club Finder'});
+        assert.equal(await headerClub.getAttribute('href'), `/clubs${campaign}`);
+        // External icons are blocked by the fixture. Exercise the visible footer
+        // link for the same destination and check the header target separately.
+        await page.locator('footer').getByRole('link',{name:'Club Finder',exact:true}).click();
         await page.waitForURL(`${base}/clubs${campaign}`);
         await page.waitForFunction(() => document.title.startsWith('Find a Gym Club'));
       }
