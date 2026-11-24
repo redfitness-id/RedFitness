@@ -18,6 +18,7 @@ export default function RouteSeo() {
   if (!metadata) {
     return (
       <Helmet>
+        <title>{`${SITE_NAME} Indonesia`}</title>
         <meta name="robots" content="noindex" />
       </Helmet>
     );
@@ -36,11 +37,15 @@ export default function RouteSeo() {
       <meta property="og:description" content={description} />
       <meta property="og:url" content={canonical} />
       <meta property="og:image" content={SOCIAL_IMAGE} />
+      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:width" content="512" />
+      <meta property="og:image:height" content="512" />
       <meta property="og:image:alt" content="RED FITNESS logo" />
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={SOCIAL_IMAGE} />
+      <meta name="twitter:image:alt" content="RED FITNESS logo" />
       {path === '/' && <script type="application/ld+json">{JSON.stringify(organization)}</script>}
     </Helmet>
   );
