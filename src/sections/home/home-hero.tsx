@@ -12,6 +12,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 // routes
 import { paths } from 'src/routes/paths';
+import { analytics } from 'src/analytics/gtm';
 // hooks
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useBanner } from 'src/hooks/use-banner';
@@ -241,6 +242,7 @@ export default function HomeHero() {
               size="large"
               variant="contained"
               startIcon={<Iconify icon="eva:flash-fill" width={24} />}
+              onClick={() => analytics.heroMembershipClick()}
               sx={{
                 bgcolor: RED,
                 color: '#fff',

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTrialAnalytics } from 'src/analytics/use-trial-analytics';
 import { m } from 'framer-motion';
 // @mui
 import { alpha, useTheme } from '@mui/material/styles';
@@ -39,6 +40,7 @@ export default function StickyFreeTrial() {
   const [open, setOpen] = useState(false);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', club_id: '' });
+  const trialAnalytics = useTrialAnalytics('sticky_free_trial');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -52,6 +54,7 @@ export default function StickyFreeTrial() {
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
     setError('');
+    trialAnalytics.start();
   };
 
   const handleSubmit = async () => {
@@ -61,8 +64,10 @@ export default function StickyFreeTrial() {
     }
     setSubmitting(true);
     setError('');
+    const eligibleClub = clubs.find((club) => String(club.id) === form.club_id);
+    const completeAnalytics = trialAnalytics.begin(eligibleClub?.id);
     try {
-      const { error: fnError } = await supabase.functions.invoke('send-registration-email', {
+      const { data, error: fnError } = await supabase.functions.invoke('send-registration-email', {
         body: {
           first_name: form.first_name.trim(),
           last_name: form.last_name.trim() || null,
@@ -73,10 +78,13 @@ export default function StickyFreeTrial() {
         },
       });
       if (fnError) throw fnError;
+      completeAnalytics(data?.success === true ? 'success' : 'unexpected_response');
 
       setSuccess(true);
+      trialAnalytics.reset();
       setForm({ first_name: '', last_name: '', email: '', phone: '', club_id: '' });
     } catch (err: any) {
+      completeAnalytics('request_failed');
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);

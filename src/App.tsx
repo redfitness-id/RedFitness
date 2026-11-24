@@ -26,6 +26,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 
 // routes
 import Router from 'src/routes/sections';
+import AnalyticsObserver from 'src/analytics/analytics-observer';
 // theme
 import ThemeProvider from 'src/theme';
 // locales
@@ -82,6 +83,7 @@ export default function App() {
                   <SettingsDrawer />
                   <ProgressBar />
                   <AuthConsumer>
+                    <AnalyticsObserver />
                     <Router />
                   </AuthConsumer>
                 </CheckoutProvider>

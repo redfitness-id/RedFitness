@@ -18,6 +18,8 @@ import { MotionViewport, varFade } from 'src/components/animate';
 // supabase
 import { supabase } from 'src/utils/supabase';
 
+import { analytics } from 'src/analytics/gtm';
+
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
@@ -49,14 +51,11 @@ export default function HomeClubNearby() {
     fetchClubs();
   }, []);
 
-  const handleNext = () => {
-    if (clubs.length === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % clubs.length);
-  };
-
-  const handlePrev = () => {
-    if (clubs.length === 0) return;
-    setCurrentIndex((prev) => (prev - 1 + clubs.length) % clubs.length);
+  const moveClub = (direction: number) => {
+    if (clubs.length < 2) return;
+    const nextIndex = (currentIndex + direction + clubs.length) % clubs.length;
+    setCurrentIndex(nextIndex);
+    analytics.clubCardView(clubs[nextIndex]?.id);
   };
 
   const currentClub = clubs.length > 0 ? clubs[currentIndex] : null;
@@ -252,7 +251,7 @@ export default function HomeClubNearby() {
             }}
           >
             <IconButton
-              onClick={handlePrev}
+              onClick={() => moveClub(-1)}
               sx={{
                 bgcolor: BLACK,
                 color: alpha('#fff', 0.5),
@@ -264,7 +263,7 @@ export default function HomeClubNearby() {
               <Iconify icon="eva:arrow-back-fill" />
             </IconButton>
             <IconButton
-              onClick={handleNext}
+              onClick={() => moveClub(1)}
               sx={{
                 bgcolor: RED,
                 color: '#fff',

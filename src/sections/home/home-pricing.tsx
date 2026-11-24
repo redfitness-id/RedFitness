@@ -18,6 +18,8 @@ import Image from 'src/components/image';
 // utils
 import { supabase } from 'src/utils/supabase';
 
+import { analytics } from 'src/analytics/gtm';
+
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
@@ -58,9 +60,10 @@ export default function HomeAppAndSocial() {
       .then(({ data }) => { if (data) setClubs(data as Club[]); });
   }, []);
 
-  const handleWhatsApp = (number: string, message: string) => {
+  const handleWhatsApp = (clubId: string, number: string, message: string) => {
     const url = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
+    analytics.whatsappClick(url, clubId);
   };
 
   const renderWhatsAppSection = (
@@ -206,7 +209,7 @@ export default function HomeAppAndSocial() {
                 <Button
                   variant="contained"
                   size="small"
-                  onClick={() => handleWhatsApp(club.whatsapp_number, `Halo Red Fitness ${club.name}! Saya ingin bertanya informasi lebih lanjut.`)}
+                  onClick={() => handleWhatsApp(club.id, club.whatsapp_number, `Halo Red Fitness ${club.name}! Saya ingin bertanya informasi lebih lanjut.`)}
                   startIcon={<Iconify icon="ic:baseline-whatsapp" width={18} />}
                   sx={{
                     bgcolor: RED,

@@ -4,6 +4,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 // routes
 import { RouterLink } from 'src/routes/components';
+import { analytics } from 'src/analytics/gtm';
 // components
 import Iconify from 'src/components/iconify';
 //
@@ -53,7 +54,7 @@ export default function NavItem({
 
   // Default
   return (
-    <Link component={RouterLink} href={path} underline="none">
+    <Link component={RouterLink} href={path} underline="none" onClick={() => analytics.navigationClick(path, 'mobile_nav')}>
       {renderContent}
     </Link>
   );
