@@ -52,6 +52,10 @@ Record `SELECT md5(pg_temp.inf03_inventory()::text);` for the reviewed snapshot 
 3. Compare all seven exact policy lists, effective and inherited grants, column ACLs, constraints, defaults, sequence access, privileged owners and role memberships, approved exceptions, dependency behavior, and exposed RPCs/views. Obtain aggregate role attestation from the role owner without extracting staff identities. Compare production ledger versions with source and verify both target versions are pending in order.
 4. Have a second Security/Privacy reviewer approve the captured digest and exact migration version privately. Bind only that digest at execution. If the comparison shows drift or an unexplained alternate path, stop and review it. The runner never generates its own approval.
 
+### Transaction boundary
+
+The runner assembles the complete SQL batch before connecting. Use only the runner for 001 and 002. `psql --single-transaction` owns the sole transaction, including the ledger insert. Keep migration and inventory inputs free of top-level transaction commands. A top-level `COMMIT` in an input would end the outer transaction early even if psql later exited with an error. The isolated suite invokes the same runner and forces the ledger insert to fail after observing the policy DDL for each version, then compares policies, grants, and ledger state across fresh connections.
+
 ## Routine deletion and exceptional erasure
 
 Admin users retain registration SELECT only. The current registrations UI still renders Delete and does not surface a failed delete clearly. A separately approved frontend change should remove the Delete action and its handler, and report access failures clearly. Until that release, brief staff that routine deletion is unavailable. Database containment does not need to wait for the UI change.

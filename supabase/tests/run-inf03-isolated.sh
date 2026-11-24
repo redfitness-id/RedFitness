@@ -60,6 +60,11 @@ expect_failure() {
   printf 'PASS %s (no policy replacement)\n' "$label"
 }
 
+if output=$(INF03_APPROVED_VERSION=20261124000200 INF03_REVIEWED_INVENTORY_MD5="$fingerprint"   "$runner" 20261124000100 2>&1) || [[ "$output" != *'approval for this exact version is required'* ]]; then
+  printf 'FAIL mismatched approval\n%s\n' "$output" >&2
+  exit 1
+fi
+printf 'PASS rejects approval for a different migration version\n'
 expect_failure 'missing fingerprint' 'independently reviewed inventory fingerprint is required' ''
 if output=$(run_storage 2>&1) || [[ "$output" != *'migration 001 must be recorded before 002'* ]]; then
   printf 'FAIL out-of-order migration\n%s\n' "$output" >&2
@@ -98,9 +103,72 @@ sql -c 'grant insert on public.registrations to service_role'
 # for this disposable test fixture and never for a production release.
 fingerprint=$( { cat "$inventory"; printf 'select md5(pg_temp.inf03_inventory()::text);\n'; } | sql -At)
 
-sql -c "alter table supabase_migrations.schema_migrations add constraint fixture_ledger_reject check (version <> '20261124000100')"
-expect_failure 'ledger write rejection rolls back migration' 'fixture_ledger_reject' "$fingerprint"
-sql -c 'alter table supabase_migrations.schema_migrations drop constraint fixture_ledger_reject'
+# Assert the DDL is visible inside the ledger insert, then reject that insert.
+sql <<'SQL'
+create function supabase_migrations.fixture_reject_ledger() returns trigger
+language plpgsql as $$
+begin
+  if new.version = '20261124000100' then
+    if not exists (select 1 from pg_policies where schemaname = 'public'
+        and tablename = 'registrations' and policyname = 'rf_registrations_admin_read')
+      or has_table_privilege('authenticated', 'public.registrations', 'DELETE') then
+      raise exception 'fixture expected website policy and grant DDL before ledger insert';
+    end if;
+  elsif new.version = '20261124000200' then
+    if (select count(*) from pg_policies where schemaname = 'storage'
+        and tablename = 'objects' and policyname like 'rf_fitness_assets_%'
+        and permissive = 'RESTRICTIVE') <> 6 then
+      raise exception 'fixture expected all Storage guards before ledger insert';
+    end if;
+  end if;
+  raise exception 'fixture rejected ledger insert after DDL for %', new.version;
+end
+$$;
+create trigger fixture_reject_ledger before insert on supabase_migrations.schema_migrations
+  for each row execute function supabase_migrations.fixture_reject_ledger();
+SQL
+
+snapshot() {
+  {
+    cat "$inventory"
+    cat <<'SQL'
+select pg_temp.inf03_inventory();
+select coalesce(jsonb_agg(to_jsonb(p) order by policyname), '[]')
+  from pg_policies p where schemaname = 'storage' and tablename = 'objects';
+select relacl::text from pg_class where oid = 'storage.objects'::regclass;
+select attname, attacl::text from pg_attribute where attrelid = 'storage.objects'::regclass
+  and attnum > 0 and not attisdropped order by attnum;
+select role_name, privilege,
+  has_table_privilege(role_name, 'storage.objects', privilege)
+from unnest(array['anon', 'authenticated', 'service_role']) role_name
+cross join unnest(array['SELECT', 'INSERT', 'UPDATE', 'DELETE']) privilege
+order by role_name, privilege;
+select coalesce(jsonb_agg(to_jsonb(m) order by version), '[]')
+  from supabase_migrations.schema_migrations m;
+SQL
+  } | sql -At
+}
+
+expect_ledger_rollback() {
+  local version=$1 runner_function=$2 before after output
+  before=$(snapshot)
+  if output=$("$runner_function" "$fingerprint" 2>&1) ||
+    [[ "$output" != *"fixture rejected ledger insert after DDL for $version"* ]]; then
+    printf 'FAIL ledger rejection for %s\n%s\n' "$version" "$output" >&2
+    exit 1
+  fi
+  after=$(snapshot)
+  if [[ "$before" != "$after" ]]; then
+    printf 'FAIL snapshot changed after rejected ledger insert for %s\n' "$version" >&2
+    exit 1
+  fi
+  printf 'PASS %s DDL visible before rejected ledger insert; original policies, grants and ledger preserved\n' "$version"
+}
+
+# Compute approval only for this disposable fixture, including the test trigger.
+fingerprint=$( { cat "$inventory"; printf 'select md5(pg_temp.inf03_inventory()::text);\n'; } | sql -At)
+expect_ledger_rollback 20261124000100 run_migration
+sql -c 'alter table supabase_migrations.schema_migrations disable trigger fixture_reject_ledger'
 
 run_migration "$fingerprint" >/dev/null
 [[ "$(sql -Atc 'select version from supabase_migrations.schema_migrations')" = 20261124000100 ]]
@@ -110,8 +178,16 @@ if output=$(run_migration "$fingerprint" 2>&1) || [[ "$output" != *'ledger alrea
   exit 1
 fi
 printf 'PASS rejects duplicate migration version\n'
+sql -c 'alter table supabase_migrations.schema_migrations enable trigger fixture_reject_ledger'
+expect_ledger_rollback 20261124000200 run_storage
+sql -c 'alter table supabase_migrations.schema_migrations disable trigger fixture_reject_ledger'
 run_storage >/dev/null
 [[ "$(sql -Atc 'select version from supabase_migrations.schema_migrations where cardinality(statements) = 1 and name is not null order by version')" = $'20261124000100\n20261124000200' ]]
 printf 'PASS reviewed Storage migration and ledger entry\n'
+if output=$(run_storage 2>&1) || [[ "$output" != *'ledger already contains'* ]]; then
+  printf 'FAIL duplicate Storage migration\n%s\n' "$output" >&2
+  exit 1
+fi
+printf 'PASS rejects duplicate Storage migration version\n'
 sql < supabase/tests/inf03_authorization.sql >/dev/null
 printf 'PASS synthetic role and intake matrix\n'

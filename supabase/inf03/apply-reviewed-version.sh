@@ -20,9 +20,10 @@ fi
 migration="supabase/migrations/${version}_${name}.sql"
 encoded_sql=$(base64 < "$migration" | tr -d '\n')
 
-# Use the operator-provided libpq connection settings. Never derives approval
-# from the target. One psql session and transaction owns DDL and ledger write.
-{
+# Assemble the whole batch before connecting. A failed input read must not
+# let psql treat a truncated batch as a successful end of input.
+sql_batch=$(
+  set -e
   printf "set local lock_timeout = '5s';\n"
   printf "lock table supabase_migrations.schema_migrations in share row exclusive mode;\n"
   printf "select set_config('rf.inf03_release_version', '%s', true) is not null;\n" "$version"
@@ -48,4 +49,6 @@ SQL
   fi
   cat "$migration"
   printf "insert into supabase_migrations.schema_migrations (version, name, statements) values ('%s', '%s', array[convert_from(decode('%s', 'base64'), 'UTF8')]);\n" "$version" "$name" "$encoded_sql"
-} | psql -X -q -v ON_ERROR_STOP=1 --single-transaction -f -
+)
+# psql alone owns the transaction. SQL inputs have no top-level transaction control.
+psql -X -q -v ON_ERROR_STOP=1 --single-transaction -f - <<< "$sql_batch"
