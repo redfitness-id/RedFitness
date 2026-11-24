@@ -152,6 +152,7 @@ export default function HomeFeaturedClasses() {
         >
           <Typography
             variant="h1"
+            component="h2"
             sx={{
               fontWeight: 900,
               lineHeight: 0.95,

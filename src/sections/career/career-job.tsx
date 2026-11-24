@@ -201,7 +201,9 @@ export default function CareersJobs() {
                   }}
                 >
                   <Typography 
-                    variant="h1" 
+                    variant="h1"
+                    component="div"
+                    aria-hidden="true"
                     sx={{ 
                       color: 'transparent', 
                       WebkitTextStroke: `1px ${alpha(COLORS.red, 0.5)}`, // Outline text Merah

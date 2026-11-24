@@ -148,6 +148,8 @@ export default function HomeJoinSteps() {
               >
                 <Typography
                   variant="h1"
+                  component="div"
+                  aria-hidden="true"
                   sx={{
                     mb: 2,
                     fontWeight: 900,
