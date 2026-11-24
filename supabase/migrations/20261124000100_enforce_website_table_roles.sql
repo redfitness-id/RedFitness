@@ -2,7 +2,29 @@ begin;
 
 set local lock_timeout = '5s';
 
--- Reconcile the deployed policy inventory before applying this replacement.
+-- Load supabase/inf03/inventory.sql and set the independently approved
+-- environment-specific fingerprint in the same operator session.
+lock table public.registrations, public.admin_profiles, public.clubs, public.classes,
+  public.schedules, public.banners, public.page_content in access exclusive mode;
+
+do $$
+declare
+  approved text := nullif(current_setting('rf.inf03_reviewed_inventory_md5', true), '');
+begin
+  if approved is null or approved !~ '^[0-9a-f]{32}$' then
+    raise exception 'INF-03 requires an independently reviewed inventory fingerprint';
+  end if;
+  if to_regprocedure('pg_temp.inf03_inventory()') is null then
+    raise exception 'INF-03 inventory helper must be loaded in this session';
+  end if;
+  if md5(pg_temp.inf03_inventory()::text) is distinct from approved then
+    raise exception 'INF-03 inventory drift: review current metadata before any policy replacement';
+  end if;
+end
+$$;
+
+-- Replace only the inventory reconciled above. Required exceptions must be
+-- represented in the reviewed migration before a fingerprint is approved.
 -- Permissive policies combine with OR, so keeping an unmatched broad policy
 -- would defeat the role checks below.
 do $$
@@ -26,7 +48,7 @@ alter table public.registrations enable row level security;
 revoke all privileges on public.admin_profiles, public.registrations
   from public, anon, authenticated;
 grant select on public.admin_profiles to authenticated;
-grant select, delete on public.registrations to authenticated;
+grant select on public.registrations to authenticated;
 
 create policy rf_profile_read_own on public.admin_profiles
   for select to authenticated using (id = (select auth.uid()));
@@ -52,10 +74,6 @@ grant execute on function rf_security.has_staff_role(text[]) to authenticated;
 create policy rf_registrations_admin_read on public.registrations
   for select to authenticated
   using ((select rf_security.has_staff_role(array['admin'])));
-create policy rf_registrations_admin_delete on public.registrations
-  for delete to authenticated
-  using ((select rf_security.has_staff_role(array['admin'])));
-
 do $$
 declare
   table_name text;
@@ -78,6 +96,52 @@ begin
       using ((select rf_security.has_staff_role(%L::text[])))
       with check ((select rf_security.has_staff_role(%L::text[])))',
       table_name, allowed_roles, allowed_roles);
+  end loop;
+end
+$$;
+
+-- Direct revocation also needs to withstand inherited grants and any remaining
+-- column grants. Abort rather than leave a client able to bypass this split.
+do $$
+declare
+  client_role text;
+  table_name text;
+  operation text;
+  allowed boolean;
+begin
+  foreach client_role in array array['anon', 'authenticated'] loop
+    if exists (
+      select 1 from pg_roles r where (rolsuper or rolbypassrls)
+        and pg_has_role(client_role, r.oid, 'MEMBER')
+    ) then
+      raise exception 'INF-03 unexpected privileged membership for %', client_role;
+    end if;
+
+    foreach table_name in array array['registrations','admin_profiles','clubs','classes',
+      'schedules','banners','page_content'] loop
+      if exists (
+        select 1 from pg_class c where c.oid = format('public.%I', table_name)::regclass
+          and pg_has_role(client_role, c.relowner, 'MEMBER')
+      ) then
+        raise exception 'INF-03 unexpected client ownership of %', table_name;
+      end if;
+
+      foreach operation in array array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER'] loop
+        allowed := case
+          when table_name in ('registrations','admin_profiles')
+            then client_role = 'authenticated' and operation = 'SELECT'
+          else operation = 'SELECT'
+            or (client_role = 'authenticated' and operation in ('INSERT','UPDATE','DELETE'))
+        end;
+
+        if has_table_privilege(client_role, format('public.%I', table_name), operation) <> allowed
+          or (case when not allowed and operation in ('SELECT','INSERT','UPDATE','REFERENCES')
+            then has_any_column_privilege(client_role, format('public.%I', table_name), operation)
+            else false end) then
+          raise exception 'INF-03 unexpected effective % grant for % on %', operation, client_role, table_name;
+        end if;
+      end loop;
+    end loop;
   end loop;
 end
 $$;

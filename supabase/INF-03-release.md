@@ -12,7 +12,7 @@ RLS is enabled on the seven reviewed public tables. Broad DML grants alone do no
 | Authenticated, no profile | Same | None | None | None |
 | Schedule manager | Same, plus own profile | None | Schedules only | None |
 | Editor | Same, plus own profile if present | None | None | None |
-| Admin | Same, plus own profile | SELECT, DELETE | Clubs, classes, schedules, banners, page content | Existing permitted operations only |
+| Admin | Same, plus own profile | SELECT only | Clubs, classes, schedules, banners, page content | Existing permitted operations only |
 | Edge Function service role | Existing club lookup access | Existing INSERT continues | Existing privileged backend access | Existing privileged backend access |
 
 The current UI recognizes admin and schedule_manager. Editor is synthetic and has no write authority in this release. Profile assignments remain trusted-operator operations. The migration adds no profile write policy. No application code changes are included.
@@ -29,26 +29,61 @@ An authorized project operator should inspect the following on the exact active 
 - Verify the deployed browser and Edge Function revisions and gateway configuration. Source calls send-registration-email from both trial forms. Its server-only service-role client inserts registrations then looks up the selected club name. Verify those privileges, correct environment binding, function invocation, and test-sink notification in isolated Supabase staging. Verify there are no approved direct anonymous writers before revoking that path.
 - Capture reviewed metadata definitions and recovery checkpoints. Verify exact migration versions with the Supabase migration ledger, and rehearse from a comparable schema with synthetic data.
 
-## Emergency containment before Vercel access
+## Expected production inventory and fail-closed check
 
-Subject to explicit incident authorization, an operator can contain these database paths without a frontend deployment. First capture policy/grant metadata and preserve access to the current trusted operator account. Prefer migration 001 when its preflight is complete and lead and admin workflows have passed staging.
+| Table | Expected shapes from supplied evidence |
+|---|---|
+| registrations | Authenticated SELECT and DELETE with unconditional row predicates; anon INSERT with unconditional check. |
+| admin_profiles | Own-profile SELECT keyed by auth.uid(); no client write policy was shown. |
+| clubs, classes, schedules | Public unconditional ALL, with additional permissive policies whose names, roles and predicates remain unresolved. |
+| page_content | Authenticated unconditional ALL. |
+| banners | Public ALL conditioned on authenticated role. |
 
-If immediate containment is required before that validation, remove public-client SELECT/DELETE access on registrations and temporarily freeze anon/authenticated writes to clubs, classes, and schedules. Extend the write freeze to page_content or banners when the incident scope warrants it. Where the confirmed problem is via direct table grants, revoke the corresponding privileges from PUBLIC, anon and authenticated and inspect inherited and column grants, policies, exposed views and RPCs for alternate paths. Preserve public reads and the server-side service-role insert. Use a short transaction with a lock timeout and record the applied DDL. The emergency freeze can temporarily block staff reads and editing. Communicate the interruption and restore those operations only through reviewed role-scoped access.
+These are minimum expected observations. Exact policy names, additional policies, visibility filters, staff exceptions, grants, and dependency definitions have not been supplied. Verify public SELECT behavior on all five content tables before authorizing their proposed public read policies.
 
-Keep the anonymous intake grant until caller compatibility is proven if an urgent freeze is applied separately. If the Storage exposure is independently confirmed, deploy only a verified restrictive guard for fitness-assets. Pause unverified uploads and preserve public asset reads rather than changing grants globally across all buckets. Production changes need the separate approvals below.
+Load `supabase/inf03/inventory.sql` in an authorized operator session and capture `SELECT pg_temp.inf03_inventory();` for independent review. Inventory includes exact policies, column types/defaults, constraints, sequence ACLs and usage, memberships, effective table and column grants, triggers, dependency metadata, and view/RPC signatures and definition fingerprints. Review callable routine bodies and exposed schemas separately for dynamic SQL or indirect paths, including through triggers. PostgreSQL dependency metadata alone cannot establish their behavior. Reconcile existing exceptions in the migration and tests before signing off. If exact metadata or the alternate-path review is missing, stop.
+
+Record `SELECT md5(pg_temp.inf03_inventory()::text);` for the reviewed snapshot and bind that approved value to `rf.inf03_reviewed_inventory_md5` in the migration runner session that loads the helper. Do not recompute and auto-approve a fresh digest at release. Quiesce concurrent ACL, policy, role, view, and RPC changes during the controlled window. The migration locks the seven tables, then rejects missing approval or different inventory before replacing policies. It checks effective privileges again inside the transaction and aborts on residual inherited or column grants. Rehearse the exact migration runner and ledger handling before production. The digest is a drift check. Access to the trusted operator workflow is the authorization boundary.
+
+## Routine deletion and exceptional erasure
+
+Admin users retain registration SELECT only. The current registrations UI still renders Delete and does not surface a failed delete clearly. A separately approved frontend change should remove the Delete action and its handler, and report access failures clearly. Until that release, brief staff that routine deletion is unavailable. Database containment does not need to wait for the UI change.
+
+Exceptional privacy erasure requires a documented authorized request, Privacy/Security approval, scope confirmation including retention obligations, and a separately authorized trusted operator. Record the decision and completion using the approved audit process without copying PII into tickets. Keep browser roles read-only for lead data.
+
+## Emergency containment
+
+Use the separate [emergency proposal](INF-03-emergency.md) only after explicit incident approval.
 
 ## Release and recovery
 
 1. Run `supabase/tests/run-inf03-isolated.sh`. It provisions an isolated PostgreSQL 15 container and uses synthetic data only. This tests the SQL boundary, including an existing broad permissive policy and the service-role insert. It does not run the Supabase Auth gateway, Storage HTTP service, browser, Edge Function, or mail provider.
-2. Apply migration 001 to isolated Supabase staging. Test both trial forms with a test inbox, authorized lead list/delete and joined club display, content upserts, schedule manager edits, and unauthorized requests. Verify permission decisions through the gateway with synthetic IDs and accounts.
+2. Apply migration 001 to isolated Supabase staging. Test both trial forms with a test inbox, authorized lead list and joined club display, denied direct lead deletion, content upserts, schedule manager edits, and unauthorized requests. Verify permission decisions through the gateway with synthetic IDs and accounts.
 3. Apply migration 002 only after Storage prerequisites pass. Test anonymous public asset reads, authorized club/class/banner upload and replacement, denied other-user writes, and another bucket. The guards add no grants, so a missing permissive admin policy blocks the Storage release.
 4. Obtain the Supabase owner's authorization for each migration. Use exact-version releases and record them in the migration ledger. A bulk push queues both files, so defer it while either migration has an unresolved gate. Schedule production with a bounded lock timeout and named operator. Recheck catalog policies and grants after each activation, confirm public page/asset reads without data extraction, and monitor aggregate intake, email and admin error signals. Any synthetic production smoke test that creates a lead needs separate approval. This PR does not authorize it.
 5. If a migration raises an error before commit, the transaction rolls back. After commit, recover with a reviewed forward migration for the specific approved role, client, or asset path. If an emergency freeze was used, keep lead protection until the reviewed replacement is active. Do not replay broad legacy grant/policy snapshots as rollback. Never discard saved leads to recover from policy changes.
 6. Frontend route guards, lead-cache clearing, CSV safety, and richer Edge Function validation/notification semantics remain separately coordinated. Confirm production Vercel access before shipping frontend changes. Database containment can proceed independently after its gates pass.
 
+## Isolated Supabase Storage HTTP test plan
+
+Use a disposable local/staging Supabase project, synthetic Auth accounts and small synthetic images. Seed one reviewed public fitness-assets image and a separate fixture bucket with its own baseline policy. Record only status and synthetic object keys. Use the browser SDK or equivalent Storage HTTP methods with anon, unassigned authenticated, schedule manager/editor, and admin sessions.
+
+1. Fetch a public fixture image directly as an anonymous visitor. Confirm HTTP 200 and unchanged bytes before and after the migration.
+2. As admin, upload to the existing clubs, classes and banners prefixes. Verify successful public retrieval. Verify the actual admin replacement flow that uploads a new image and updates the reference. If in-place replacement is operationally required, exercise the approved update/upsert method separately. Its prerequisite permissive policy must already exist.
+3. Attempt uploads and in-place replacements as anonymous and ordinary authenticated users. Verify denial and unchanged original bytes. Test a move into and out of fitness-assets where the API allows moves.
+4. Repeat the other bucket's before/after read and write checks. Results must match its own approved baseline. Confirm no redirect or bucket setting change. Record failures as release blockers.
+
 ## Decisions requiring RED FITNESS approval
 
-- Security and Privacy approve lead read and deletion entitlements, incident scope, evidence retention, and trusted profile assignment ownership. Confirm when direct anonymous intake may be retired.
+- Security and Privacy approve designated lead-read admins and exceptional erasure workflow, incident scope, evidence retention, and trusted profile assignment ownership. Confirm when direct anonymous intake may be retired.
 - Operations approves the schedule manager scope and documents who may author public content and manage assets. If an editor role is needed, define it explicitly before granting capabilities.
 - Commercial and Operations confirm public content visibility, approved intake callers, and the staffed recipient of lead notifications.
 - The Supabase owner approves production metadata access, each exact migration, emergency use if needed, staging evidence, recovery point, and the release window.
+
+## Production readiness checklist
+
+- [ ] Authorized catalog snapshot matches the supplied policy shapes and every additional policy is reconciled, including legitimate role exceptions and data visibility.
+- [ ] Approved production fingerprint and controlled runner are recorded. The release procedure uses the same loaded helper, with a rehearsed migration ledger workflow.
+- [ ] Lead entitlements, role assignments, indirect RPC/view paths and service-role privileges are signed off. The remaining Delete control has either a separately approved fix or a documented staff notice.
+- [ ] Isolated Supabase staging passes both free-trial forms and the mail sink, PostgREST editor/schedule/registration requests, and all six Storage HTTP checks.
+- [ ] Recovery checkpoint, least-privilege forward recovery, and a named operator are approved. Each migration has separate release authorization.

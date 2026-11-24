@@ -31,7 +31,7 @@ select rf_test_denied('select * from admin_profiles');
 do $$
 declare name text;
 begin
-  foreach name in array array['clubs','classes','schedules','banners','page_content'] loop
+  foreach name in array array['clubs','classes','schedules'] loop
     perform rf_test_rows(format('select * from %I', name), 1);
     perform rf_test_denied(format('insert into %I (name) values (''denied'')', name));
     perform rf_test_denied(format('update %I set name = ''denied''', name));
@@ -39,6 +39,10 @@ begin
   end loop;
 end
 $$;
+select rf_test_rows('select * from page_content', 1);
+select rf_test_rows('select * from banners', 1);
+select rf_test_denied('insert into page_content (page_key,section_key) values (''no'',''no'')');
+select rf_test_denied('update banners set image_url = ''blocked''');
 select rf_test_rows('select * from storage.objects where bucket_id = ''fitness-assets''', 1);
 select rf_test_denied('insert into storage.objects values (''fitness-assets'',''anon.webp'')');
 select rf_test_rows('update storage.objects set name = ''blocked.webp'' where bucket_id = ''fitness-assets''', 0);
@@ -59,11 +63,10 @@ begin
     perform rf_test_denied('update admin_profiles set role = ''admin'' where id = auth.uid()');
     perform rf_test_denied('delete from admin_profiles');
     perform rf_test_rows('select * from registrations', case when persona = 4 then 1 else 0 end);
-    perform rf_test_rows('delete from registrations where id = -1', 0);
     perform rf_test_denied('update registrations set phone = ''synthetic''');
     perform rf_test_denied('insert into registrations (first_name,email) values (''Fake'',''fake@example.invalid'')');
 
-    foreach name in array array['clubs','classes','schedules','banners','page_content'] loop
+    foreach name in array array['clubs','classes','schedules'] loop
       perform rf_test_rows(format('select * from %I', name), 1);
       if persona = 4 or (persona = 2 and name = 'schedules') then
         perform rf_test_rows(format('insert into %I (name) values (''editable fixture'')', name), 1);
@@ -76,17 +79,24 @@ begin
       end if;
     end loop;
 
+    perform rf_test_denied('delete from registrations');
+    perform rf_test_rows('select * from page_content', 1);
+    perform rf_test_rows('select * from banners', 1);
+
     if persona = 4 then
-      perform rf_test_rows('insert into page_content (id,name) values (1,''Updated CMS'')
-        on conflict (id) do update set name = excluded.name', 1);
-      perform rf_test_rows('insert into banners (id,name) values (1,''Updated banner'')
-        on conflict (id) do update set name = excluded.name', 1);
+      perform rf_test_rows('insert into page_content (page_key,section_key,content)
+        values (''fixture'',''hero'',''{"title":"Synthetic"}'')
+        on conflict (page_key,section_key) do update set content = excluded.content', 1);
+      perform rf_test_rows('insert into banners (page_key,image_url) values (''fixture'',''/synthetic.webp'')
+        on conflict (page_key) do update set image_url = excluded.image_url', 1);
       perform rf_test_rows('insert into storage.objects values (''fitness-assets'',''banners/admin.webp'')', 1);
       perform rf_test_rows('update storage.objects set name = ''banners/admin-updated.webp'' where name = ''banners/admin.webp''', 1);
       perform rf_test_rows('delete from storage.objects where name = ''banners/admin-updated.webp''', 0);
-      perform rf_test_rows('delete from registrations', 1);
     else
-      perform rf_test_rows('delete from registrations', 0);
+      perform rf_test_denied('insert into page_content (page_key,section_key) values (''no'',''no'')');
+      perform rf_test_denied('insert into banners (page_key) values (''no'')');
+      perform rf_test_rows('update page_content set content = ''{}''', 0);
+      perform rf_test_rows('delete from banners', 0);
       perform rf_test_denied('insert into storage.objects values (''fitness-assets'',''blocked.webp'')');
       perform rf_test_rows('update storage.objects set name = ''blocked.webp'' where bucket_id = ''fitness-assets''', 0);
       perform rf_test_denied('update storage.objects set bucket_id = ''fitness-assets'' where name = ''other.webp''');
@@ -94,6 +104,13 @@ begin
   end loop;
 end
 $$;
+reset role;
+
+-- Same client identity loses lead read when its protected profile changes.
+update public.admin_profiles set role = 'schedule_manager'
+where id = '00000000-0000-0000-0000-000000000004';
+set local role authenticated;
+select rf_test_rows('select * from registrations', 0);
 reset role;
 
 set local role service_role;
