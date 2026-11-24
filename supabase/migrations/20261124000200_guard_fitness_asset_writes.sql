@@ -1,6 +1,11 @@
-begin;
-
-set local lock_timeout = '5s';
+-- Apply through supabase/inf03/apply-reviewed-version.sh.
+do $$
+begin
+  if current_setting('rf.inf03_release_version', true) is distinct from '20261124000200' then
+    raise exception 'INF-03 requires the exact-version release runner';
+  end if;
+end
+$$;
 
 -- Execute only after verifying the actual Storage grants and existing policies.
 -- Restrictive policies narrow existing permissions, including policies added
@@ -45,5 +50,3 @@ create policy rf_fitness_assets_staff_delete on storage.objects
   as restrictive for delete to authenticated
   using (bucket_id is distinct from 'fitness-assets'
     or (select rf_security.has_staff_role(array['admin'])));
-
-commit;

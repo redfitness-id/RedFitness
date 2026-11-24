@@ -11,6 +11,8 @@ Approval only. This procedure has not been executed.
 
 ## Minimal temporary restrictions
 
+Review the [candidate SQL](inf03/emergency-freeze.sql) against the approved catalog. It is outside the migration directory and requires an explicit approval setting in the operator session. It only covers direct grants and verifies effective client privileges before commit. An approved alternative is needed if inherited ACLs, column grants, or exposed RPCs and views are still active. The candidate aborts on residual direct-role privileges and does not attempt to rewrite those additional paths.
+
 Use a reviewed, short transaction with a lock timeout. The operator must tailor the exact revocations to the observed ACLs and abort the transaction if its verification fails.
 
 1. On public.registrations remove SELECT and DELETE access from PUBLIC, anon and authenticated, covering corresponding column and inherited privileges where applicable. Contain any separately exposed view/RPC path explicitly using the verified inventory. Retain the trusted service intake role.

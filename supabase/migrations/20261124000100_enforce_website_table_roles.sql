@@ -1,6 +1,11 @@
-begin;
-
-set local lock_timeout = '5s';
+-- Apply through supabase/inf03/apply-reviewed-version.sh.
+do $$
+begin
+  if current_setting('rf.inf03_release_version', true) is distinct from '20261124000100' then
+    raise exception 'INF-03 requires the exact-version release runner';
+  end if;
+end
+$$;
 
 -- Load supabase/inf03/inventory.sql and set the independently approved
 -- environment-specific fingerprint in the same operator session.
@@ -158,5 +163,3 @@ begin
   end if;
 end
 $$;
-
-commit;

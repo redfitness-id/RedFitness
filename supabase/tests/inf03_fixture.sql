@@ -84,3 +84,6 @@ grant select, insert, update, delete on storage.objects to anon, authenticated;
 create policy broad_storage_read on storage.objects for select using (true);
 create policy broad_storage_insert on storage.objects for insert with check (true);
 create policy broad_storage_update on storage.objects for update using (true) with check (true);
+
+create schema supabase_migrations;
+create table supabase_migrations.schema_migrations (version text primary key, statements text[], name text);
