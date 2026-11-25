@@ -112,7 +112,7 @@ export default function StickyFreeTrial() {
         transform: open ? 'translateX(0)' : 'translateX(var(--trial-panel-width))',
         transition: 'transform 240ms ease-out',
         '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-        right: 0,
+        left: 'max(0px, calc(100vw - 432px))',
         width: 'min(432px, 100vw)',
         zIndex: 9999,
         display: 'flex',
