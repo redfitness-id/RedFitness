@@ -119,6 +119,7 @@ export default function PersonalTrainingHero() {
 
             <m.div variants={varFade().inRight}>
               <Button
+                href="#pt-inquiry-options"
                 variant="contained"
                 size="large"
                 endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -141,7 +142,7 @@ export default function PersonalTrainingHero() {
                   }
                 }}
               >
-                {content.button}
+                View PT Location Information
               </Button>
             </m.div>
           </Grid>

@@ -125,6 +125,7 @@ export default function ClubsHero() {
         <m.div variants={varFade().inRight}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <Button
+              href="#club-locations"
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -143,31 +144,7 @@ export default function ClubsHero() {
                 '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' },
               }}
             >
-              {content.button1}
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="large"
-              startIcon={<Iconify icon="solar:play-circle-bold" />}
-              sx={{
-                color: '#fff',
-                borderColor: alpha('#fff', 0.3),
-                borderRadius: 0, // Sharp
-                px: 5,
-                py: 1.75,
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                fontFamily: 'monospace',
-                '&:hover': {
-                  borderColor: RED,
-                  bgcolor: alpha(RED, 0.1),
-                },
-              }}
-            >
-              {content.button2}
+              Browse Club Locations
             </Button>
           </Stack>
         </m.div>

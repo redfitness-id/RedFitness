@@ -14,6 +14,8 @@ import { MotionViewport, varFade } from 'src/components/animate';
 // hooks
 import { useSectionContent } from 'src/hooks/use-page-content';
 
+import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
+
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
@@ -151,6 +153,8 @@ export default function HomeRockstarWorkouts() {
 
                     <Box sx={{ pt: 3 }}>
                         <Button
+                            component={InquiryInfoLink}
+                            href="/clubs"
                             variant="contained"
                             size="large"
                             endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -169,7 +173,7 @@ export default function HomeRockstarWorkouts() {
                                 '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' }
                             }}
                         >
-                            {content.button}
+                            View Club Directory
                         </Button>
                     </Box>
                   </Stack>

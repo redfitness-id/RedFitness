@@ -14,6 +14,8 @@ import { MotionContainer, varFade } from 'src/components/animate';
 import { useBanner } from 'src/hooks/use-banner';
 import { useSectionContent } from 'src/hooks/use-page-content';
 
+import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
+
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
@@ -142,6 +144,7 @@ export default function RedSeitaiHero() {
         <m.div variants={varFade().inRight}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <Button
+              href="#seitai-treatments"
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -160,10 +163,12 @@ export default function RedSeitaiHero() {
                 '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' },
               }}
             >
-              {content.button1}
+              Explore Treatments
             </Button>
 
             <Button
+              component={InquiryInfoLink}
+              href="/clubs"
               variant="outlined"
               size="large"
               startIcon={<Iconify icon="solar:info-circle-bold" />}
@@ -181,7 +186,7 @@ export default function RedSeitaiHero() {
                 '&:hover': { borderColor: RED, bgcolor: alpha(RED, 0.1) },
               }}
             >
-              {content.button2}
+              View Club Directory
             </Button>
           </Stack>
         </m.div>

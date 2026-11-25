@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Card from '@mui/material/Card';
-import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
 // components
 import Image from 'src/components/image';
@@ -26,6 +26,7 @@ const BLACK = '#060606';
 export default function ClubsGrid() {
   const [clubs, setClubs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -42,8 +43,15 @@ export default function ClubsGrid() {
     fetchClubs();
   }, []);
 
+  const query = search.trim().toLowerCase();
+  const matchingClubs = clubs.filter((club) =>
+    [club.name, club.city, club.address].some((value) =>
+      typeof value === 'string' && value.toLowerCase().includes(query)
+    )
+  );
+
   return (
-    <Box sx={{ bgcolor: BLACK, py: { xs: 10, md: 15 }, color: '#fff', borderTop: `1px solid ${alpha(RED, 0.15)}` }}>
+    <Box id="club-locations" sx={{ scrollMarginTop: 100, bgcolor: BLACK, py: { xs: 10, md: 15 }, color: '#fff', borderTop: `1px solid ${alpha(RED, 0.15)}` }}>
       <Container component={MotionViewport}>
         
         {/* HEADER & SEARCH */}
@@ -61,9 +69,17 @@ export default function ClubsGrid() {
             </Typography>
           </m.div>
 
+          <Typography variant="body2" sx={{ textAlign: 'center', maxWidth: 520 }}>
+            Search for club locations and addresses. This directory does not confirm service availability
+            or accept Sales inquiries or bookings.
+          </Typography>
           <m.div variants={varFade().inUp}>
             <TextField
-              placeholder="ENTER SEARCH TERMS"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              inputProps={{ 'aria-label': 'Search club locations' }}
+              placeholder="Search by name, city or address"
               variant="outlined"
               sx={{
                 width: { xs: 1, md: 480 },
@@ -90,13 +106,6 @@ export default function ClubsGrid() {
                     <Iconify icon="solar:settings-bold-duotone" width={24} sx={{ color: alpha('#fff', 0.4), mr: 1 }} />
                   </InputAdornment>
                 ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton edge="end" sx={{ color: RED, borderRadius: 0, '&:hover': { bgcolor: alpha(RED, 0.1) } }}>
-                       <Iconify icon="eva:search-fill" />
-                    </IconButton>
-                  </InputAdornment>
-                )
               }}
             />
           </m.div>
@@ -108,7 +117,14 @@ export default function ClubsGrid() {
           </Box>
         ) : (
           <Grid container spacing={3}>
-            {clubs.map((club, index) => (
+            {matchingClubs.length === 0 && (
+              <Grid xs={12}>
+                <Typography role="status">
+                  {clubs.length ? 'No clubs match your search.' : 'Club locations are unavailable right now.'}
+                </Typography>
+              </Grid>
+            )}
+            {matchingClubs.map((club, index) => (
               <Grid key={club.id || index} xs={12} sm={6} md={3}>
                 <m.div 
                   initial={{ opacity: 0, y: 30 }}
@@ -126,13 +142,11 @@ export default function ClubsGrid() {
                       display: 'flex',
                       flexDirection: 'column',
                       transition: 'all 0.3s ease',
-                      cursor: 'pointer',
                       '&:hover': {
                         transform: 'translateY(-8px)',
                         borderColor: alpha(RED, 0.5),
                         bgcolor: '#0c0c0c',
                         '& .club-img': { transform: 'scale(1.05)' },
-                        '& .arrow-icon': { bgcolor: RED, color: '#fff', borderColor: RED }
                       }
                     }}
                   >
@@ -168,26 +182,18 @@ export default function ClubsGrid() {
                             {club.address}
                           </Typography>
                       </Box>
-
-                      {/* Arrow Icon Button */}
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                           <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: 1.5, fontFamily: 'monospace', color: RED, mr: 1, textTransform: 'uppercase' }}>
-                              View Detail
-                           </Typography>
-                           <IconButton 
-                              className="arrow-icon"
-                              size="small"
-                              sx={{ 
-                                  bgcolor: BLACK,
-                                  color: alpha('#fff', 0.5),
-                                  transition: 'all 0.3s',
-                                  border: `1px solid ${alpha('#fff', 0.1)}`,
-                                  borderRadius: 0, // Sharp
-                              }}
-                           >
-                              <Iconify icon="solar:arrow-right-up-bold" width={18} />
-                           </IconButton>
-                      </Box>
+                      {typeof club.address === 'string' && club.address.trim() && (
+                        <Link
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(club.address.trim())}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Search the address of ${club.name} on Google Maps (opens in a new tab)`}
+                          variant="body2"
+                          sx={{ alignSelf: 'flex-start', color: '#fff' }}
+                        >
+                          Search address on Google Maps
+                        </Link>
+                      )}
                     </Box>
                   </Card>
                 </m.div>

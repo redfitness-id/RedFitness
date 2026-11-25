@@ -6,6 +6,7 @@ import Link, { LinkProps } from '@mui/material/Link';
 import CardActionArea from '@mui/material/CardActionArea';
 // routes
 import { RouterLink } from 'src/routes/components';
+import { analytics } from 'src/analytics/gtm';
 // components
 import Iconify from 'src/components/iconify';
 //
@@ -50,7 +51,7 @@ export const NavItem = forwardRef<HTMLDivElement, NavItemDesktopProps>(
 
     // Default
     return (
-      <Link component={RouterLink} href={path} underline="none">
+      <Link component={RouterLink} href={path} underline="none" onClick={() => analytics.navigationClick(path, 'desktop_nav')}>
         {renderContent}
       </Link>
     );

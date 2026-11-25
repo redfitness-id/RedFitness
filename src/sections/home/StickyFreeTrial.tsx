@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { m } from 'framer-motion';
+import { useState, useEffect, useId, useRef } from 'react';
+import { classifyTrialOutcome, unconfirmedTrialMessages } from 'src/analytics/trial-outcome';
+import { useTrialAnalytics } from 'src/analytics/use-trial-analytics';
 // @mui
 import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -36,9 +37,14 @@ const fieldSx = (theme: any) => ({
 
 export default function StickyFreeTrial() {
   const theme = useTheme();
+  const panelId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', club_id: '' });
+  const trialAnalytics = useTrialAnalytics('sticky_free_trial');
+  const submissionLocked = useRef(false);
+  const [unconfirmed, setUnconfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -51,18 +57,23 @@ export default function StickyFreeTrial() {
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
-    setError('');
+    if (!unconfirmed) setError('');
+    trialAnalytics.start();
   };
 
   const handleSubmit = async () => {
+    if (submissionLocked.current) return;
     if (!form.first_name.trim() || !form.email.trim()) {
       setError('First name and email are required.');
       return;
     }
+    submissionLocked.current = true;
     setSubmitting(true);
     setError('');
+    const eligibleClub = clubs.find((club) => String(club.id) === form.club_id);
+    const completeAnalytics = trialAnalytics.begin(eligibleClub?.id);
     try {
-      const { error: fnError } = await supabase.functions.invoke('send-registration-email', {
+      const { data, error: fnError } = await supabase.functions.invoke('send-registration-email', {
         body: {
           first_name: form.first_name.trim(),
           last_name: form.last_name.trim() || null,
@@ -72,12 +83,21 @@ export default function StickyFreeTrial() {
           source: 'free_trial',
         },
       });
-      if (fnError) throw fnError;
+      const outcome = classifyTrialOutcome(data, fnError);
+      completeAnalytics(outcome);
+      if (outcome !== 'success') {
+        setUnconfirmed(true);
+        setError(unconfirmedTrialMessages[outcome]);
+        return;
+      }
 
       setSuccess(true);
+      trialAnalytics.reset();
       setForm({ first_name: '', last_name: '', email: '', phone: '', club_id: '' });
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
+    } catch {
+      completeAnalytics('request_failed');
+      setUnconfirmed(true);
+      setError(unconfirmedTrialMessages.request_failed);
     } finally {
       setSubmitting(false);
     }
@@ -85,18 +105,15 @@ export default function StickyFreeTrial() {
 
   return (
     <Box
-      component={m.div}
-      initial={false}
-      animate={open ? 'open' : 'closed'}
-      variants={{
-        open: { x: 0 },
-        closed: { x: 380 },
-      }}
-      transition={{ type: 'spring', stiffness: 260, damping: 30 }}
       sx={{
+        '--trial-panel-width': 'min(380px, calc(100vw - 52px))',
         position: 'fixed',
-        top: '20%',
-        right: 0,
+        top: { xs: open ? 12 : '20%', sm: '20%' },
+        transform: open ? 'translateX(0)' : 'translateX(var(--trial-panel-width))',
+        transition: 'transform 240ms ease-out',
+        '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+        left: 'max(0px, calc(100vw - 432px))',
+        width: 'min(432px, 100vw)',
         zIndex: 9999,
         display: 'flex',
         alignItems: 'flex-start',
@@ -104,9 +121,17 @@ export default function StickyFreeTrial() {
     >
       {/* TRIGGER TAB */}
       <Box
+        component="button"
+        type="button"
+        ref={triggerRef}
+        aria-expanded={open}
+        aria-controls={panelId}
         onClick={() => setOpen((prev) => !prev)}
         sx={{
           cursor: 'pointer',
+          border: 0,
+          width: 52,
+          flexShrink: 0,
           bgcolor: '#DF2026',
           color: 'common.white',
           p: 2,
@@ -133,11 +158,19 @@ export default function StickyFreeTrial() {
 
       {/* FORM PANEL */}
       <Box
+        id={panelId}
+        role="region"
+        aria-label="Free Trial"
+        aria-hidden={!open}
         sx={{
-          width: 380,
+          width: 'var(--trial-panel-width)',
+          visibility: open ? 'visible' : 'hidden',
+          maxHeight: { xs: 'calc(100dvh - 24px)', sm: 'calc(80dvh - 12px)' },
+          minHeight: { xs: 0, sm: 'min(450px, calc(80dvh - 12px))' },
+          overflowY: 'auto',
           bgcolor: '#111',
-          p: 3,
-          minHeight: 450,
+          p: { xs: 2, sm: 3 },
+
           boxShadow: `-24px 24px 72px -8px ${alpha(theme.palette.common.black, 0.48)}`,
           borderLeft: `3px solid #DF2026`,
           display: 'flex',
@@ -153,7 +186,7 @@ export default function StickyFreeTrial() {
               Register your first session free
             </Typography>
           </Box>
-          <IconButton onClick={() => setOpen(false)} size="small" sx={{ color: 'rgba(255,255,255,0.35)', '&:hover': { color: '#fff' } }}>
+          <IconButton aria-label="Close free trial" onClick={() => { setOpen(false); triggerRef.current?.focus(); }} size="small" sx={{ color: 'rgba(255,255,255,0.35)', '&:hover': { color: '#fff' } }}>
             <Iconify icon="eva:close-fill" />
           </IconButton>
         </Stack>
@@ -171,7 +204,7 @@ export default function StickyFreeTrial() {
             </Typography>
             <Button
               size="small"
-              onClick={() => setSuccess(false)}
+              onClick={() => { submissionLocked.current = false; setSuccess(false); }}
               sx={{ color: '#DF2026', fontSize: '0.75rem', fontFamily: 'monospace', letterSpacing: 1, textTransform: 'uppercase' }}
             >
               Register again
@@ -208,6 +241,8 @@ export default function StickyFreeTrial() {
               fullWidth
               size="small"
               label="Phone Number"
+              type="tel"
+              autoComplete="tel"
               value={form.phone}
               onChange={handleChange('phone')}
               sx={fieldSx(theme)}
@@ -229,7 +264,7 @@ export default function StickyFreeTrial() {
             </TextField>
 
             {error && (
-              <Typography sx={{ color: '#DF2026', fontSize: '0.78rem', fontFamily: 'monospace' }}>
+              <Typography role="alert" sx={{ color: '#DF2026', fontSize: '0.78rem', fontFamily: 'monospace' }}>
                 {error}
               </Typography>
             )}
@@ -238,7 +273,7 @@ export default function StickyFreeTrial() {
               variant="contained"
               size="large"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={unconfirmed || submitting}
               endIcon={!submitting && <Iconify icon="solar:arrow-right-up-bold" />}
               sx={{
                 mt: 1,

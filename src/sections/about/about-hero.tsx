@@ -20,6 +20,8 @@ const RED_DARK = '#A8171C';
 const BLACK = '#060606';
 const DEFAULT_BG = '/assets/background/member.webp';
 
+import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
+
 // ----------------------------------------------------------------------
 
 export default function AboutHero() {
@@ -102,6 +104,8 @@ export default function AboutHero() {
 
             <m.div variants={varFade().inRight}>
               <Button
+                component={InquiryInfoLink}
+                href="/clubs"
                 variant="contained"
                 size="large"
                 endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -124,7 +128,7 @@ export default function AboutHero() {
                   },
                 }}
               >
-                {content.button}
+                View Club Directory
               </Button>
             </m.div>
           </Grid>

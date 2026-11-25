@@ -1,4 +1,3 @@
-import ClubsDualCTA from "../clubs-cta";
 import ClubsHero from "../clubs-hero";
 import ClubsGrid from "../clubs-list";
 
@@ -7,7 +6,6 @@ export default function CLubsView() {
         <>
         <ClubsHero />
         <ClubsGrid />
-        <ClubsDualCTA/>
         </>
     );
 }

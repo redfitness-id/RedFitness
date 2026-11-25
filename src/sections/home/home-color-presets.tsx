@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { classifyTrialOutcome, unconfirmedTrialMessages } from 'src/analytics/trial-outcome';
+import { useTrialAnalytics } from 'src/analytics/use-trial-analytics';
 import { m } from 'framer-motion';
 // @mui
 import { alpha, useTheme } from '@mui/material/styles';
@@ -95,6 +97,9 @@ export default function HomeFreeTrial() {
   const mdUp = useResponsive('up', 'md');
   const [clubs, setClubs] = useState<Club[]>([]);
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', club_id: '', agreed: true });
+  const trialAnalytics = useTrialAnalytics('inline_free_trial');
+  const submissionLocked = useRef(false);
+  const [unconfirmed, setUnconfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -108,18 +113,23 @@ export default function HomeFreeTrial() {
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = field === 'agreed' ? e.target.checked : e.target.value;
     setForm((prev) => ({ ...prev, [field]: value }));
-    setError('');
+    if (!unconfirmed) setError('');
+    trialAnalytics.start();
   };
 
   const handleSubmit = async () => {
+    if (submissionLocked.current) return;
     if (!form.first_name.trim() || !form.email.trim()) {
       setError('First name and email are required.');
       return;
     }
+    submissionLocked.current = true;
     setSubmitting(true);
     setError('');
+    const eligibleClub = clubs.find((club) => String(club.id) === form.club_id);
+    const completeAnalytics = trialAnalytics.begin(eligibleClub?.id);
     try {
-      const { error: fnError } = await supabase.functions.invoke('send-registration-email', {
+      const { data, error: fnError } = await supabase.functions.invoke('send-registration-email', {
         body: {
           first_name: form.first_name.trim(),
           last_name: form.last_name.trim() || null,
@@ -129,12 +139,21 @@ export default function HomeFreeTrial() {
           source: 'free_trial',
         },
       });
-      if (fnError) throw fnError;
+      const outcome = classifyTrialOutcome(data, fnError);
+      completeAnalytics(outcome);
+      if (outcome !== 'success') {
+        setUnconfirmed(true);
+        setError(unconfirmedTrialMessages[outcome]);
+        return;
+      }
 
       setSuccess(true);
+      trialAnalytics.reset();
       setForm({ first_name: '', last_name: '', email: '', phone: '', club_id: '', agreed: true });
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
+    } catch {
+      completeAnalytics('request_failed');
+      setUnconfirmed(true);
+      setError(unconfirmedTrialMessages.request_failed);
     } finally {
       setSubmitting(false);
     }
@@ -205,7 +224,7 @@ export default function HomeFreeTrial() {
             <Typography sx={{ color: alpha('#fff', 0.5), fontSize: '0.875rem', textAlign: 'center', lineHeight: 1.7 }}>
               We&apos;ll be in touch shortly. Check your email for confirmation.
             </Typography>
-            <Button size="small" onClick={() => setSuccess(false)} sx={{ color: RED, fontFamily: 'monospace', letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.75rem' }}>
+            <Button size="small" onClick={() => { submissionLocked.current = false; setSuccess(false); }} sx={{ color: RED, fontFamily: 'monospace', letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.75rem' }}>
               Register again
             </Button>
           </Stack>
@@ -227,7 +246,7 @@ export default function HomeFreeTrial() {
             </TextField>
 
             {error && (
-              <Typography sx={{ color: RED, fontSize: '0.78rem', fontFamily: 'monospace' }}>{error}</Typography>
+              <Typography role="alert" sx={{ color: RED, fontSize: '0.78rem', fontFamily: 'monospace' }}>{error}</Typography>
             )}
 
             <FormControlLabel
@@ -252,7 +271,7 @@ export default function HomeFreeTrial() {
               size="large"
               variant="contained"
               onClick={handleSubmit}
-              disabled={submitting || !form.agreed}
+              disabled={unconfirmed || submitting || !form.agreed}
               endIcon={!submitting && <Iconify icon="solar:arrow-right-up-bold" width={18} />}
               sx={{
                 py: 1.75,
