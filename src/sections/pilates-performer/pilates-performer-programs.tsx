@@ -17,7 +17,6 @@ import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
-const RED_DARK = '#A8171C';
 const BLACK = '#060606';
 
 const PROGRAM_TAGS = [
@@ -202,32 +201,8 @@ export default function PilatesPerformerPrograms() {
 
         {/* CTA */}
         <Box sx={{ textAlign: 'center', mt: 10 }}>
-          <m.div variants={varFade().inUp}>
-            <Button
-              variant="contained"
-              size="large"
-              endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
-              disabled
-              sx={{
-                bgcolor: RED,
-                color: '#fff',
-                borderRadius: 0,
-                px: 6,
-                py: 1.75,
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                fontFamily: 'monospace',
-                boxShadow: 'none',
-                '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' },
-              }}
-            >
-              {content.cta_button}
-            </Button>
-          </m.div>
           <Typography variant="body2" sx={{ mt: 2, color: alpha('#fff', 0.72) }}>
-            The club directory lists locations. Ask about Pilates availability before visiting.
+            Browse club locations. The directory does not confirm Pilates availability or accept bookings.
           </Typography>
           <Button component={InquiryInfoLink} href="/clubs" variant="outlined" sx={{ mt: 2 }}>
             View Club Directory

@@ -146,31 +146,6 @@ export default function ClubsHero() {
             >
               Browse Club Locations
             </Button>
-
-            <Button
-              disabled
-              variant="outlined"
-              size="large"
-              startIcon={<Iconify icon="solar:play-circle-bold" />}
-              sx={{
-                color: '#fff',
-                borderColor: alpha('#fff', 0.3),
-                borderRadius: 0, // Sharp
-                px: 5,
-                py: 1.75,
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                fontFamily: 'monospace',
-                '&:hover': {
-                  borderColor: RED,
-                  bgcolor: alpha(RED, 0.1),
-                },
-              }}
-            >
-              {content.button2}
-            </Button>
           </Stack>
         </m.div>
       </Container>

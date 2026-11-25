@@ -18,7 +18,6 @@ import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
-const RED_DARK = '#A8171C';
 const BLACK = '#060606';
 
 const TREATMENT_META = [
@@ -195,39 +194,18 @@ export default function RedSeitaiTreatments() {
         </Grid>
 
         {/* CTA */}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ mt: 10 }}>
-          <m.div variants={varFade().inUp}>
-            <Button
-              variant="contained"
-              size="large"
-              endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
-              disabled
-              sx={{
-                bgcolor: RED,
-                color: '#fff',
-                borderRadius: 0,
-                px: 6,
-                py: 1.75,
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                fontFamily: 'monospace',
-                boxShadow: 'none',
-                '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' },
-              }}
-            >
-              {content.cta_button1}
-            </Button>
-          </m.div>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ mt: 10, textAlign: 'center' }}>
 
           <m.div variants={varFade().inUp}>
+            <Typography variant="body2" sx={{ mb: 2, color: alpha('#fff', 0.72) }}>
+              Browse club locations. The directory does not confirm RED Seitai availability or accept bookings.
+            </Typography>
             <Button
               component={InquiryInfoLink}
               href="/clubs"
               variant="outlined"
               size="large"
-              startIcon={<Iconify icon="solar:phone-bold" />}
+              startIcon={<Iconify icon="solar:map-point-bold" />}
               sx={{
                 color: '#fff',
                 borderColor: alpha('#fff', 0.2),

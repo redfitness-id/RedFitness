@@ -51,10 +51,10 @@ export default function PersonalTrainingFinal() {
                 }}
               >
                 <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
-                  Personal Training Inquiries
+                  Personal Training Location Information
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 3, color: alpha('#fff', 0.72) }}>
-                  Online PT requests are currently unavailable. Use the club directory to find a location to ask about training options.
+                  Online PT inquiries are currently unavailable. Browse club locations and addresses in the directory.
                 </Typography>
                 <Button
                   component={InquiryInfoLink}

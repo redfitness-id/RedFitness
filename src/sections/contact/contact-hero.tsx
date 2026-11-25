@@ -142,7 +142,7 @@ export default function PersonalTrainingHero() {
                   }
                 }}
               >
-                View Inquiry Options
+                View PT Location Information
               </Button>
             </m.div>
           </Grid>

@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Card from '@mui/material/Card';
+import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
 // components
 import Image from 'src/components/image';
@@ -68,6 +69,10 @@ export default function ClubsGrid() {
             </Typography>
           </m.div>
 
+          <Typography variant="body2" sx={{ textAlign: 'center', maxWidth: 520 }}>
+            Search for club locations and addresses. This directory does not confirm service availability
+            or accept Sales inquiries or bookings.
+          </Typography>
           <m.div variants={varFade().inUp}>
             <TextField
               type="search"
@@ -177,7 +182,18 @@ export default function ClubsGrid() {
                             {club.address}
                           </Typography>
                       </Box>
-
+                      {typeof club.address === 'string' && club.address.trim() && (
+                        <Link
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(club.address.trim())}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Search the address of ${club.name} on Google Maps (opens in a new tab)`}
+                          variant="body2"
+                          sx={{ alignSelf: 'flex-start', color: '#fff' }}
+                        >
+                          Search address on Google Maps
+                        </Link>
+                      )}
                     </Box>
                   </Card>
                 </m.div>

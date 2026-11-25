@@ -3,11 +3,12 @@ const { chromium } = require('playwright');
 
 const origin = new URL(process.env.UX_TEST_URL || 'http://127.0.0.1:4220').origin;
 assert.ok(['127.0.0.1', 'localhost'].includes(new URL(origin).hostname));
-const campaign = '?utm_source=fixture&gclid=fixture';
-const incoming = campaign + '&email=fixture%40example.invalid&token=fixture';
+const campaign = '?utm_source=fixture&utm_medium=cpc&gclid=fixture&fbclid=social';
+const incoming = campaign + '&email=fixture%40example.invalid&token=fixture&next=%2Fjoin';
 const clubs = [
   { id: '12345678-1234-4567-9abc-123456789abc', name: 'Fixture Central', city: 'North', address: '1 Test Road' },
   { id: '98765432-4321-4321-abcd-123456789abc', name: 'Fixture South', city: 'South', address: '2 Sample Street' },
+  { id: '11111111-1111-4111-8111-111111111111', name: 'Fixture Unlisted', city: 'North', address: '' },
 ];
 
 (async () => {
@@ -52,25 +53,35 @@ const clubs = [
       };
 
       await open('/membership');
+      assert.equal(await page.locator('main').getByRole('button', { name: /try now|check out now/i }).count(), 0);
       assert.equal(await link('View Club Directory').getAttribute('href'), '/clubs' + campaign);
       await link('Explore Personal Training').click();
       await page.waitForURL(origin + '/personal-training' + campaign);
       await open('/personal-training');
-      await visitSection('View Inquiry Options', 'pt-inquiry-options');
+      await visitSection('View PT Location Information', 'pt-inquiry-options');
       assert.equal(await page.locator('main input[type=email]').count(), 0);
       assert.equal(await link('View Club Directory').getAttribute('href'), '/clubs' + campaign);
 
       await open('/pilates-performer');
       await visitSection('Explore Pilates Programs', 'pilates-programs');
-      assert.equal(await page.getByRole('button', { name: 'Start Your Program', exact: true }).isDisabled(), true);
+      assert.equal(await page.getByRole('button', { name: 'Start Your Program', exact: true }).count(), 0);
       assert.equal(await link('View Club Directory').getAttribute('href'), '/clubs' + campaign);
 
       await open('/red-seitai');
       await visitSection('Explore Treatments', 'seitai-treatments');
-      assert.equal(await page.getByRole('button', { name: 'Book a Session', exact: true }).isDisabled(), true);
+      assert.equal(await page.getByRole('button', { name: 'Book a Session', exact: true }).count(), 0);
       await link('View Club Directory').click();
       await page.waitForURL(origin + '/clubs' + campaign);
       await page.getByText('Fixture Central', { exact: true }).waitFor();
+      await page.getByText(/does not confirm service availability/).waitFor();
+      assert.equal(await page.locator('main').getByRole('button', { name: /virtual tour|claim free trial|get proposal/i }).count(), 0);
+      const map = page.getByRole('link', { name: /address of Fixture Central on Google Maps/ });
+      const mapUrl = new URL(await map.getAttribute('href'));
+      assert.equal(mapUrl.origin, 'https://www.google.com');
+      assert.equal(mapUrl.pathname, '/maps/search/');
+      assert.deepEqual([...mapUrl.searchParams], [['api', '1'], ['query', '1 Test Road']]);
+      assert.equal(await map.getAttribute('rel'), 'noopener noreferrer');
+      assert.equal(await page.getByRole('link', { name: /address of Fixture Unlisted on Google Maps/ }).count(), 0);
       const search = page.getByRole('searchbox', { name: 'Search club locations' });
       await search.fill('sample street');
       await page.getByText('Fixture South', { exact: true }).waitFor();

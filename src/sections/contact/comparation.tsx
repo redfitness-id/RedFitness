@@ -129,7 +129,7 @@ export default function PersonalTrainingComparison() {
                     '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' } 
                 }}
             >
-              View Inquiry Options
+              View PT Location Information
             </Button>
           </m.div>
         </Box>
