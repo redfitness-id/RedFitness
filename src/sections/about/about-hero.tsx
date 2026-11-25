@@ -68,13 +68,14 @@ export default function AboutHero() {
                 </Stack>
             </m.div>
 
-            <Box sx={{ mt: 2, mb: 3 }}>
+            <Box component="h1" sx={{ mt: 2, mb: 3, mx: 0, fontSize: 'inherit', fontWeight: 'inherit' }}>
               <TextAnimate
                 text={content.title_line1}
                 variants={varFade().inRight}
                 sx={{ color: '#fff', display: 'block', fontFamily: "'Poppins', sans-serif", letterSpacing: -2, lineHeight: 1 }}
               />
               <Stack
+                component="span"
                 spacing={1}
                 display="inline-flex"
                 direction={{ xs: 'column', md: 'row' }}
@@ -171,7 +172,7 @@ type TextAnimateProps = BoxProps &
 function TextAnimate({ text, variants, sx, ...other }: TextAnimateProps) {
   return (
     <Box
-      component={m.div}
+      component={m.span}
       sx={{
         typography: 'h1', // Adjusted size to match other heroes
         fontWeight: 900,

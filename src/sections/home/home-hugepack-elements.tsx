@@ -133,6 +133,7 @@ export default function HomeHugePackElements() {
           {/* Large display heading */}
           <Typography
             variant="h1"
+            component="h2"
             sx={{
               fontWeight: 800,
               lineHeight: 0.95,

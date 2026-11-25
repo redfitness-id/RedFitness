@@ -173,7 +173,7 @@ export default function TimetableSection() {
               </Typography>
               <Box sx={{ width: 28, height: 2, bgcolor: RED }} />
             </Stack>
-            <Typography variant="h2" sx={{ fontWeight: 800, textTransform: 'uppercase', fontFamily: "'Poppins', sans-serif", letterSpacing: -3, lineHeight: 0.9, fontSize: { xs: '2.5rem', md: '4rem' } }}>
+            <Typography variant="h2" component="h1" sx={{ fontWeight: 800, textTransform: 'uppercase', fontFamily: "'Poppins', sans-serif", letterSpacing: -3, lineHeight: 0.9, fontSize: { xs: '2.5rem', md: '4rem' } }}>
               Class <Box component="span" sx={{ color: RED, fontStyle: 'italic', display: 'block' }}>Schedule.</Box>
             </Typography>
           </m.div>
@@ -225,7 +225,7 @@ export default function TimetableSection() {
                         }}
                     >
                         <Stack spacing={0}>
-                        <Typography variant="caption" sx={{ fontWeight: 800, fontSize: '0.7rem' }}>{day.toUpperCase()}</Typography>
+                        <Typography lang="id" variant="caption" sx={{ fontWeight: 800, fontSize: '0.7rem' }}>{day.toUpperCase()}</Typography>
                         <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.5 }}>VIEW</Typography>
                         </Stack>
                     </Button>

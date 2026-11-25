@@ -88,6 +88,7 @@ export const mainRoutes = [
       { path: '500', element: <Page500 /> },
       { path: '404', element: <Page404 /> },
       { path: '403', element: <Page403 /> },
+      { path: '*', element: <Page404 /> },
     ],
   },
   // ─── Admin section ────────────────────────────────────────────────────────

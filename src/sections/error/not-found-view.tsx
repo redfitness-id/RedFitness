@@ -15,7 +15,7 @@ export default function NotFoundView() {
   return (
     <MotionContainer>
       <m.div variants={varBounce().in}>
-        <Typography variant="h3" sx={{ mb: 2 }}>
+        <Typography variant="h3" component="h1" sx={{ mb: 2 }}>
           Sorry, Page Not Found!
         </Typography>
       </m.div>

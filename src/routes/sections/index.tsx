@@ -1,4 +1,4 @@
-import { Navigate, useRoutes } from 'react-router-dom';
+import { useRoutes } from 'react-router-dom';
 // layouts
 import MainLayout from 'src/layouts/main';
 // config
@@ -45,7 +45,5 @@ export default function Router() {
     // // Components routes
     // ...componentsRoutes,
 
-    // No match 404
-    { path: '*', element: <Navigate to="/404" replace /> },
   ]);
 }

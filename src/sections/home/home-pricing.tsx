@@ -74,6 +74,7 @@ export default function HomeAppAndSocial() {
               <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2 }}>
                 <Box sx={{ width: 28, height: 2, bgcolor: RED, flexShrink: 0 }} />
                 <Typography
+                  lang="id"
                   sx={{
                     fontSize: '0.65rem',
                     fontWeight: 800,
@@ -106,7 +107,7 @@ export default function HomeAppAndSocial() {
                   via WhatsApp.
                 </Box>
               </Typography>
-              <Typography sx={{ color: alpha('#fff', 0.45), lineHeight: 1.85, fontSize: '0.88rem' }}>
+              <Typography lang="id" sx={{ color: alpha('#fff', 0.45), lineHeight: 1.85, fontSize: '0.88rem' }}>
                 Tidak perlu ribet. Langsung chat dengan tim kami untuk booking kelas,
                 tanya paket membership, atau jadwalkan sesi personal training — kapan saja.
               </Typography>
@@ -123,14 +124,14 @@ export default function HomeAppAndSocial() {
             >
               <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
                 <Iconify icon="solar:clock-circle-bold-duotone" width={24} sx={{ color: RED }} />
-                <Typography variant="subtitle2" sx={{ color: 'common.white', fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: "'Poppins', sans-serif" }}>
+                <Typography lang="id" variant="subtitle2" sx={{ color: 'common.white', fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: "'Poppins', sans-serif" }}>
                   Jam Operasional
                 </Typography>
               </Stack>
               <Stack spacing={2}>
                 {OPERATIONAL_HOURS.map((item) => (
                   <Stack key={item.day} direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="body2" sx={{ color: alpha('#fff', 0.6), fontSize: '0.82rem', fontWeight: 500 }}>
+                    <Typography lang="id" variant="body2" sx={{ color: alpha('#fff', 0.6), fontSize: '0.82rem', fontWeight: 500 }}>
                       {item.day}
                     </Typography>
                     <Chip

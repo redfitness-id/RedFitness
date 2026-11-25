@@ -182,7 +182,7 @@ export default function PersonalTrainingComparison() {
               {STEP_SLIDES.map((slide) => (
                 <SwiperSlide key={slide.id}>
                   <Box sx={{ position: 'relative', borderRadius: 0, overflow: 'hidden', border: `1px solid ${alpha('#fff', 0.1)}` }}>
-                    <Typography variant="h1" sx={{ 
+                    <Typography variant="h1" component="span" aria-hidden="true" sx={{
                       position: 'absolute', top: -10, left: 10, zIndex: 1, 
                       color: 'transparent', WebkitTextStroke: `1px ${alpha('#fff', 0.4)}`, 
                       fontWeight: 900, fontSize: '5rem', fontFamily: "'Poppins', sans-serif"
