@@ -86,7 +86,7 @@ const clubs = [
       await search.fill('sample street');
       await page.getByText('Fixture South', { exact: true }).waitFor();
       assert.equal(await page.getByText('Fixture Central', { exact: true }).count(), 0);
-      await search.fill('unlisted');
+      await search.fill('no matching fixture');
       await page.getByText('No clubs match your search.').waitFor();
 
       await open('/membership');
