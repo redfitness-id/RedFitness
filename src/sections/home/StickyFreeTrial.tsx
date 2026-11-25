@@ -113,6 +113,7 @@ export default function StickyFreeTrial() {
         transition: 'transform 240ms ease-out',
         '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
         right: 0,
+        width: 'min(432px, 100vw)',
         zIndex: 9999,
         display: 'flex',
         alignItems: 'flex-start',
@@ -129,6 +130,7 @@ export default function StickyFreeTrial() {
         sx={{
           cursor: 'pointer',
           border: 0,
+          width: 52,
           flexShrink: 0,
           bgcolor: '#DF2026',
           color: 'common.white',
