@@ -13,6 +13,7 @@ import { useResponsive } from 'src/hooks/use-responsive';
 // components
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
+import SvgColor from 'src/components/svg-color';
 // local
 import { HEADER } from '../config-layout';
 import { navConfig } from './config-navigation';
@@ -103,7 +104,7 @@ export default function Header() {
                 aria-label="Club Finder"
                 sx={{ display: 'flex', color: 'inherit', '&:hover': { color: RED } }}
               >
-                <Iconify icon="solar:map-point-bold" width={20} />
+                <SvgColor src="/assets/icons/components/ic_extra_map.svg" sx={{ width: 20, height: 20 }} />
               </Box>
 
               {/* Language Selector — hidden on smaller desktops to save space */}
