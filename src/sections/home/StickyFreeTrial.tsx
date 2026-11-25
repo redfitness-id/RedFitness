@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { classifyTrialOutcome, unconfirmedTrialMessages } from 'src/analytics/trial-outcome';
 import { useTrialAnalytics } from 'src/analytics/use-trial-analytics';
 import { m } from 'framer-motion';
 // @mui
@@ -41,6 +42,8 @@ export default function StickyFreeTrial() {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', club_id: '' });
   const trialAnalytics = useTrialAnalytics('sticky_free_trial');
+  const submissionLocked = useRef(false);
+  const [unconfirmed, setUnconfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -53,15 +56,17 @@ export default function StickyFreeTrial() {
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
-    setError('');
+    if (!unconfirmed) setError('');
     trialAnalytics.start();
   };
 
   const handleSubmit = async () => {
+    if (submissionLocked.current) return;
     if (!form.first_name.trim() || !form.email.trim()) {
       setError('First name and email are required.');
       return;
     }
+    submissionLocked.current = true;
     setSubmitting(true);
     setError('');
     const eligibleClub = clubs.find((club) => String(club.id) === form.club_id);
@@ -77,15 +82,21 @@ export default function StickyFreeTrial() {
           source: 'free_trial',
         },
       });
-      if (fnError) throw fnError;
-      completeAnalytics(data?.success === true ? 'success' : 'unexpected_response');
+      const outcome = classifyTrialOutcome(data, fnError);
+      completeAnalytics(outcome);
+      if (outcome !== 'success') {
+        setUnconfirmed(true);
+        setError(unconfirmedTrialMessages[outcome]);
+        return;
+      }
 
       setSuccess(true);
       trialAnalytics.reset();
       setForm({ first_name: '', last_name: '', email: '', phone: '', club_id: '' });
-    } catch (err: any) {
+    } catch {
       completeAnalytics('request_failed');
-      setError(err.message || 'Something went wrong. Please try again.');
+      setUnconfirmed(true);
+      setError(unconfirmedTrialMessages.request_failed);
     } finally {
       setSubmitting(false);
     }
@@ -179,7 +190,7 @@ export default function StickyFreeTrial() {
             </Typography>
             <Button
               size="small"
-              onClick={() => setSuccess(false)}
+              onClick={() => { submissionLocked.current = false; setSuccess(false); }}
               sx={{ color: '#DF2026', fontSize: '0.75rem', fontFamily: 'monospace', letterSpacing: 1, textTransform: 'uppercase' }}
             >
               Register again
@@ -237,7 +248,7 @@ export default function StickyFreeTrial() {
             </TextField>
 
             {error && (
-              <Typography sx={{ color: '#DF2026', fontSize: '0.78rem', fontFamily: 'monospace' }}>
+              <Typography role="alert" sx={{ color: '#DF2026', fontSize: '0.78rem', fontFamily: 'monospace' }}>
                 {error}
               </Typography>
             )}
@@ -246,7 +257,7 @@ export default function StickyFreeTrial() {
               variant="contained"
               size="large"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={unconfirmed || submitting}
               endIcon={!submitting && <Iconify icon="solar:arrow-right-up-bold" />}
               sx={{
                 mt: 1,

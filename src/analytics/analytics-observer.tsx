@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { analytics, CONSENT_EVENT, setAnalyticsConsent } from './gtm';
+import { analytics } from './gtm';
+import { CONSENT_READY_EVENT } from './consent';
 
 export default function AnalyticsObserver() {
   const { pathname, search } = useLocation();
@@ -10,9 +11,9 @@ export default function AnalyticsObserver() {
   }, [pathname, search]);
 
   useEffect(() => {
-    const handleConsent = (event: Event) => setAnalyticsConsent((event as CustomEvent<unknown>).detail);
-    window.addEventListener(CONSENT_EVENT, handleConsent);
-    return () => window.removeEventListener(CONSENT_EVENT, handleConsent);
+    // A CMP initialized earlier can now replay its current choice. A CMP
+    // initialized later should publish its current choice when it is ready.
+    window.dispatchEvent(new Event(CONSENT_READY_EVENT));
   }, []);
 
   return null;

@@ -24,7 +24,7 @@
 | `form_start` | First tracked edit per inline or sticky trial form cycle. | `form_id`. No field/value data. |
 | `form_submit_attempt` | Existing client validation passes and a trial function invocation is about to start. | `form_id` and optional validated `club_id`. |
 | `form_submit_success` | Existing function call resolves without a transport error and response contains boolean `success: true`. | Same context and form fields as the attempt. This tracks confirmed application response, with no GA4 key-event or generate_lead mapping in MKT-01. |
-| `form_submit_error` | Invocation fails or lacks the explicit success acknowledgment. | Fixed `error_code` values `request_failed` and `unexpected_response`. Existing UI behavior is preserved even if analytics sees an unexpected response. |
+| `form_submit_error` | Invocation fails or lacks the explicit success acknowledgment. | Fixed `error_code` values `request_failed` and `unexpected_response`. The UI keeps the entered fields, shows an unconfirmed message, and disables repeat submission for that mounted form. An error does not establish whether a record exists. |
 
 ## Parameter dictionary
 
@@ -37,13 +37,30 @@
 ## Enablement and release gates
 
 1. Marketing owns a company GA4 property, web data stream and GTM web container. Set reporting timezone and account roles. Store the real GA4 ID in the approved GTM tag configuration. Do not commit example IDs or publish tags from this PR.
-2. Privacy and the product owner approve consent copy and behavior, retention, and the display and persistence mechanism. The app defaults to denied and loads no script until the approved integration dispatches a `redfitness:analytics-consent` event with `detail: 'granted'` after the app mounts. Dispatch `'denied'` on withdrawal and reapply the persisted choice on page load. No preference UI or storage is added here.
-3. Use one Google tag under GTM and one custom-event trigger for each approved app event. Disable automatic initial pageviews (`send_page_view: false`), browser-history pageviews, and enhanced-measurement form and outbound events that duplicate app signals. Disable additional automatic collection pending privacy review. Require analytics consent for all analytics tags and keep ad consent denied. Ensure withdrawal stops subsequent tag requests.
+2. Privacy and the product owner approve consent copy and behavior, retention, and the display and persistence mechanism. The app defaults to denied. Before app initialization, the CMP should subscribe to `redfitness:analytics-consent-ready` and replay its current persisted choice on that signal. A CMP that initializes later should publish its current choice immediately. In both cases dispatch a `redfitness:analytics-consent` CustomEvent on window with `detail: 'granted'` or `'denied'`, and publish subsequent changes. The app listens when its analytics module initializes, including before its route observer mounts. Standalone earlier events cannot be recovered without CMP replay. No preference UI or storage is added here.
+3. Use one Google tag under GTM and one custom-event trigger for each approved app event. Disable automatic initial pageviews (`send_page_view: false`), browser-history pageviews, and enhanced-measurement form and outbound events that duplicate app signals. Disable additional automatic collection pending privacy review. Require analytics consent for all analytics tags and keep ad consent denied. The app stops emitting events immediately on withdrawal, but an already-loaded GTM script stays loaded. Verify actual tag and network behavior under withdrawal in the approved vendor setup.
 4. Bind `page_location` and `page_referrer` to sanitized app values. Review the actual Google tag configuration and network payloads for automatic URL, query, referrer, title, advertising or enhanced-measurement collection. The app layer cannot constrain arbitrary container tags. Release blocks on any personal data or raw query leaking through tag configuration.
-5. Approve `VITE_GTM_ENABLED=true` and the actual `VITE_GTM_CONTAINER_ID` in the intended production build environment only. Missing settings, development, localhost and noncanonical preview origins remain inert even with consent. Run mock QA locally. Under separately approved controlled live verification, use Tag Assistant and GA4 DebugView to confirm denied/granted/revoked behavior, one page view per route, no automatic duplicates, and no PII. Do not import events into Ads or declare a conversion without approval.
-6. Verify FIX-01 approved paths and URL forwarding in the selected release order. Retest trial outcomes if INF-03 or later form work changes the function/database interaction. Stop collection by turning off the build flag or pausing the approved GTM configuration through the release owner.
+5. Approve `VITE_GTM_ENABLED=true` and the actual `VITE_GTM_CONTAINER_ID` in the intended production build environment only. Missing settings, development, localhost and noncanonical preview origins remain inert even with consent. Run mock QA locally. Under separately approved controlled live verification, use Tag Assistant and GA4 DebugView to confirm denied/granted/revoked behavior, one page view per intended route or fresh consent session, no automatic duplicates, no completion for an attempt spanning withdrawal, and no PII. In the network panel confirm no analytics requests before grant and after withdrawal, no unapproved tags, and sanitized URL/referrer fields. In DebugView require one expected event for each scenario, with correct fixed parameters and no events for suppressed cases. Do not import events into Ads or declare a conversion without approval.
+6. Verify FIX-01 approved paths and URL forwarding in the selected release order. Retest trial outcomes if INF-03 or later form work changes the function/database interaction. For deactivation, pause analytics tags or roll back to the last safe GTM version through the release owner and build with the flag disabled. A new build does not unload a script in already-open tabs, so verify the vendor kill switch and withdrawal behavior.
 
 [Google SPA measurement](https://developers.google.com/analytics/devguides/collection/ga4/single-page-applications) · [Google consent implementation](https://developers.google.com/tag-platform/security/guides/consent)
+
+## Trial outcome limits
+
+| Observed result | UI and analytics |
+|---|---|
+| No invocation error and boolean success true | Confirmation, form reset, and form_submit_success. |
+| Missing or false acknowledgment without an invocation error | Unconfirmed alert, values preserved, submit locked for this mounted form, and form_submit_error with unexpected_response. |
+| Network exception or function invocation error, including possible persistence before email failure | Unconfirmed alert, values preserved, submit locked for this mounted form, and form_submit_error with request_failed. No assertion about persistence. |
+
+The lock prevents repeat submission in that form instance. Browser reloads, other form instances and devices are outside its scope. Durable duplicate protection and a persisted-lead acknowledgment belong to a later backend workstream.
+
+## Later attribution design
+
+- **Engagement now** uses fixed aggregate campaign classifications. Current events cannot resolve campaign names, click attribution, persistence or quality.
+- **Campaign and paid attribution later** needs an approved, consent-aware first-party campaign taxonomy, retention and access rules, and a clean boundary for mapping incoming campaign data to approved campaign keys. Review paid-click handling and vendor terms before designing any import. This PR forwards no raw UTM or click ID values.
+- **Persisted leads later** require a server acknowledgment that is independent of email, a stable opaque reference, and deduplication. Browser success and WhatsApp opens remain separate from durable leads.
+- **Qualified leads and sales later** require an approved club or CRM disposition workflow and restricted joining to first-party lead references. Review attribution and privacy before sending any eligible outcome to an ad platform.
 
 ## Local QA
 

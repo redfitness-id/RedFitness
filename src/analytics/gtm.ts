@@ -1,9 +1,8 @@
 import { approvedContainer, createAnalytics } from './events';
+import { listenForAnalyticsConsent } from './consent';
 
 type Layer = unknown[];
 type AnalyticsWindow = Window & { dataLayer?: Layer };
-
-export const CONSENT_EVENT = 'redfitness:analytics-consent';
 
 function consentCommand(action: 'default' | 'update', granted: boolean) {
   // GTM's consent queue expects the gtag arguments object.
@@ -24,8 +23,8 @@ let consent: 'granted' | 'denied' = 'denied';
 
 export const analytics = createAnalytics((event) => layer?.push(event));
 
-export function setAnalyticsConsent(value: unknown) {
-  if ((value !== 'granted' && value !== 'denied') || value === consent) return;
+function setAnalyticsConsent(value: 'granted' | 'denied') {
+  if (value === consent) return;
   const id = approvedContainer(
     import.meta.env.PROD,
     window.location.origin,
@@ -34,7 +33,14 @@ export function setAnalyticsConsent(value: unknown) {
   );
   if (!id) return;
 
-  if (value === 'granted' && !layer) {
+  if (value === 'denied') {
+    consent = value;
+    analytics.setConsent(value);
+    layer?.push(consentCommand('update', false));
+    return;
+  }
+
+  if (!layer) {
     const target = window as AnalyticsWindow;
     if (document.querySelector('script[src^="https://www.googletagmanager.com/gtm.js"]')
       || (target.dataLayer !== undefined && !Array.isArray(target.dataLayer))) return;
@@ -48,9 +54,12 @@ export function setAnalyticsConsent(value: unknown) {
     script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(id)}`;
     document.head.appendChild(script);
   } else if (layer) {
-    layer.push(consentCommand('update', value === 'granted'));
+    layer.push(consentCommand('update', true));
   }
 
   consent = value;
   analytics.setConsent(value);
 }
+
+// Listen as soon as the app module initializes, before its route observer mounts.
+listenForAnalyticsConsent(window, setAnalyticsConsent);

@@ -109,3 +109,33 @@ test('form completion is once per attempt, tied to its origin and consent window
   assert.equal(events.filter((e)=>e.event === 'form_submit_success').length, 1);
   assert.equal(events.some((e)=>e.event === 'generate_lead'),false);
 });
+
+test('trial acknowledgment and errors classify the observable contract', async () => {
+  const { classifyTrialOutcome } = await import('../src/analytics/trial-outcome.ts');
+  assert.equal(classifyTrialOutcome({ success: true }, null), 'success');
+  assert.equal(classifyTrialOutcome({ success: 'true' }, null), 'unexpected_response');
+  assert.equal(classifyTrialOutcome(undefined, null), 'unexpected_response');
+  assert.equal(classifyTrialOutcome(null, new TypeError('fixture transport failed')), 'request_failed');
+  assert.equal(classifyTrialOutcome({ success: true }, new Error('fixture persisted before mail error')), 'request_failed');
+});
+
+test('consent listener accepts only explicit choices and works before route initialization', async () => {
+  const { CONSENT_EVENT, listenForAnalyticsConsent } = await import('../src/analytics/consent.ts');
+  const { analytics, events } = fixture();
+  const target = new EventTarget();
+  const send = (detail) => target.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail }));
+  send('granted');
+  const stop = listenForAnalyticsConsent(target, analytics.setConsent);
+  send({ consent: 'granted' });
+  assert.deepEqual(events, []);
+  send('granted');
+  analytics.visit('/membership', '');
+  send('granted');
+  assert.equal(events.filter((e) => e.event === 'page_view').length, 1);
+  send('denied');
+  analytics.visit('/clubs', '');
+  assert.equal(events.filter((e) => e.event === 'page_view').length, 1);
+  send('granted');
+  assert.equal(events.filter((e) => e.event === 'page_view').length, 2);
+  stop();
+});
