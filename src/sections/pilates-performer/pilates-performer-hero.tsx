@@ -140,6 +140,7 @@ export default function PilatesPerformerHero() {
 
         <m.div variants={varFade().inRight}>
           <Button
+            href="#pilates-programs"
             variant="contained"
             size="large"
             endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -158,7 +159,7 @@ export default function PilatesPerformerHero() {
               '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' },
             }}
           >
-            {content.button}
+            Explore Pilates Programs
           </Button>
         </m.div>
       </Container>

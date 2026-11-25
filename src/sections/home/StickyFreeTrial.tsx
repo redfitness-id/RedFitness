@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { classifyTrialOutcome, unconfirmedTrialMessages } from 'src/analytics/trial-outcome';
 import { useTrialAnalytics } from 'src/analytics/use-trial-analytics';
-import { m } from 'framer-motion';
 // @mui
 import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -38,6 +37,8 @@ const fieldSx = (theme: any) => ({
 
 export default function StickyFreeTrial() {
   const theme = useTheme();
+  const panelId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', club_id: '' });
@@ -104,18 +105,15 @@ export default function StickyFreeTrial() {
 
   return (
     <Box
-      component={m.div}
-      initial={false}
-      animate={open ? 'open' : 'closed'}
-      variants={{
-        open: { x: 0 },
-        closed: { x: 380 },
-      }}
-      transition={{ type: 'spring', stiffness: 260, damping: 30 }}
       sx={{
+        '--trial-panel-width': 'min(380px, calc(100vw - 52px))',
         position: 'fixed',
-        top: '20%',
-        right: 0,
+        top: { xs: open ? 12 : '20%', sm: '20%' },
+        transform: open ? 'translateX(0)' : 'translateX(var(--trial-panel-width))',
+        transition: 'transform 240ms ease-out',
+        '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+        left: 'max(0px, calc(100vw - 432px))',
+        width: 'min(432px, 100vw)',
         zIndex: 9999,
         display: 'flex',
         alignItems: 'flex-start',
@@ -123,9 +121,17 @@ export default function StickyFreeTrial() {
     >
       {/* TRIGGER TAB */}
       <Box
+        component="button"
+        type="button"
+        ref={triggerRef}
+        aria-expanded={open}
+        aria-controls={panelId}
         onClick={() => setOpen((prev) => !prev)}
         sx={{
           cursor: 'pointer',
+          border: 0,
+          width: 52,
+          flexShrink: 0,
           bgcolor: '#DF2026',
           color: 'common.white',
           p: 2,
@@ -152,11 +158,19 @@ export default function StickyFreeTrial() {
 
       {/* FORM PANEL */}
       <Box
+        id={panelId}
+        role="region"
+        aria-label="Free Trial"
+        aria-hidden={!open}
         sx={{
-          width: 380,
+          width: 'var(--trial-panel-width)',
+          visibility: open ? 'visible' : 'hidden',
+          maxHeight: { xs: 'calc(100dvh - 24px)', sm: 'calc(80dvh - 12px)' },
+          minHeight: { xs: 0, sm: 'min(450px, calc(80dvh - 12px))' },
+          overflowY: 'auto',
           bgcolor: '#111',
-          p: 3,
-          minHeight: 450,
+          p: { xs: 2, sm: 3 },
+
           boxShadow: `-24px 24px 72px -8px ${alpha(theme.palette.common.black, 0.48)}`,
           borderLeft: `3px solid #DF2026`,
           display: 'flex',
@@ -172,7 +186,7 @@ export default function StickyFreeTrial() {
               Register your first session free
             </Typography>
           </Box>
-          <IconButton onClick={() => setOpen(false)} size="small" sx={{ color: 'rgba(255,255,255,0.35)', '&:hover': { color: '#fff' } }}>
+          <IconButton aria-label="Close free trial" onClick={() => { setOpen(false); triggerRef.current?.focus(); }} size="small" sx={{ color: 'rgba(255,255,255,0.35)', '&:hover': { color: '#fff' } }}>
             <Iconify icon="eva:close-fill" />
           </IconButton>
         </Stack>
@@ -227,6 +241,8 @@ export default function StickyFreeTrial() {
               fullWidth
               size="small"
               label="Phone Number"
+              type="tel"
+              autoComplete="tel"
               value={form.phone}
               onChange={handleChange('phone')}
               sx={fieldSx(theme)}
