@@ -7,6 +7,7 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
 import Box, { BoxProps } from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
 // components
 import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
@@ -19,8 +20,6 @@ const RED = '#DF2026';
 const RED_DARK = '#A8171C';
 const BLACK = '#060606';
 const DEFAULT_BG = '/assets/background/member.webp';
-
-import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
 
 // ----------------------------------------------------------------------
 
