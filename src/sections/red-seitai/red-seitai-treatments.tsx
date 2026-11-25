@@ -13,6 +13,8 @@ import { MotionViewport, varFade } from 'src/components/animate';
 // hooks
 import { useSectionContent } from 'src/hooks/use-page-content';
 
+import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
+
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
@@ -37,8 +39,8 @@ export default function RedSeitaiTreatments() {
     desc: content[`t${i + 1}_desc`] || '',
   }));
   return (
-    <Box
-      sx={{
+    <Box id="seitai-treatments"
+      sx={{ scrollMarginTop: 100,
         bgcolor: '#080808',
         py: { xs: 10, md: 15 },
         borderTop: `1px solid ${alpha(RED, 0.15)}`,
@@ -199,7 +201,7 @@ export default function RedSeitaiTreatments() {
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
-              href="/join/select-club"
+              disabled
               sx={{
                 bgcolor: RED,
                 color: '#fff',
@@ -221,6 +223,8 @@ export default function RedSeitaiTreatments() {
 
           <m.div variants={varFade().inUp}>
             <Button
+              component={InquiryInfoLink}
+              href="/clubs"
               variant="outlined"
               size="large"
               startIcon={<Iconify icon="solar:phone-bold" />}
@@ -238,7 +242,7 @@ export default function RedSeitaiTreatments() {
                 '&:hover': { borderColor: RED, color: RED, bgcolor: alpha(RED, 0.06) },
               }}
             >
-              {content.cta_button2}
+              View Club Directory
             </Button>
           </m.div>
         </Stack>

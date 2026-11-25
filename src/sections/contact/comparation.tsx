@@ -110,7 +110,8 @@ export default function PersonalTrainingComparison() {
         {/* CTA Button */}
         <Box sx={{ textAlign: 'center', mt: 6, mb: 15 }}>
           <m.div variants={varFade().inUp}>
-            <Button 
+            <Button
+              href="#pt-inquiry-options"
                 variant="contained" 
                 size="large" 
                 endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -128,7 +129,7 @@ export default function PersonalTrainingComparison() {
                     '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' } 
                 }}
             >
-              {content.cta_button}
+              View Inquiry Options
             </Button>
           </m.div>
         </Box>

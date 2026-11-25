@@ -56,6 +56,7 @@ export default function ClubsDualCTA() {
             </Typography>
 
             <Button
+              disabled
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -108,6 +109,7 @@ export default function ClubsDualCTA() {
             </Typography>
 
             <Button
+              disabled
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}

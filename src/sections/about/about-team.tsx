@@ -14,6 +14,8 @@ import { MotionViewport, varFade } from 'src/components/animate';
 // hooks
 import { useSectionContent } from 'src/hooks/use-page-content';
 
+import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
+
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
@@ -85,6 +87,8 @@ export default function HomeGoalsAndDualCTA() {
             </Box>
 
             <Button
+              component={InquiryInfoLink}
+              href="/personal-training"
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -106,7 +110,7 @@ export default function HomeGoalsAndDualCTA() {
                 }
               }}
             >
-              {content.goals_button}
+              Explore Personal Training
             </Button>
           </m.div>
         </Grid>
@@ -184,6 +188,7 @@ export default function HomeGoalsAndDualCTA() {
           </Typography>
           
           <Button
+            disabled
             variant="contained"
             size="large"
             endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -235,6 +240,7 @@ export default function HomeGoalsAndDualCTA() {
           </Typography>
           
           <Button
+            disabled
             variant="contained"
             size="large"
             endIcon={<Iconify icon="solar:arrow-right-up-bold" />}

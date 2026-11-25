@@ -125,6 +125,7 @@ export default function ClubsHero() {
         <m.div variants={varFade().inRight}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <Button
+              href="#club-locations"
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
@@ -143,10 +144,11 @@ export default function ClubsHero() {
                 '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' },
               }}
             >
-              {content.button1}
+              Browse Club Locations
             </Button>
 
             <Button
+              disabled
               variant="outlined"
               size="large"
               startIcon={<Iconify icon="solar:play-circle-bold" />}

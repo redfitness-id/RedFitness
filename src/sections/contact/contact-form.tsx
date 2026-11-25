@@ -4,40 +4,25 @@ import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 // components
 import Iconify from 'src/components/iconify';
 import { MotionViewport, varFade } from 'src/components/animate';
 // hooks
 import { useSectionContent } from 'src/hooks/use-page-content';
 
+import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
+
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
 const RED_DARK = '#A8171C';
 const BLACK = '#060606';
-
-const inputSx = {
-    '& .MuiFilledInput-root': {
-      borderRadius: 0, // Sharp
-      color: '#fff',
-      fontFamily: 'monospace',
-      bgcolor: alpha('#fff', 0.05),
-      borderBottom: `2px solid ${alpha('#fff', 0.2)}`,
-      '&:hover': { bgcolor: alpha('#fff', 0.08) },
-      '&.Mui-focused': { bgcolor: alpha('#fff', 0.1), borderBottomColor: RED },
-    },
-    '& .MuiInputLabel-root': { color: alpha('#fff', 0.4), fontFamily: 'monospace', fontSize: '0.8rem' },
-    '& .MuiInputLabel-root.Mui-focused': { color: RED },
-};
 
 export default function PersonalTrainingFinal() {
   const content = useSectionContent('contact', 'form');
@@ -51,68 +36,36 @@ export default function PersonalTrainingFinal() {
         {/* SECTION: JOIN THE PROGRAM */}
         <Grid container spacing={{ xs: 5, md: 10 }} alignItems="center" sx={{ mb: { xs: 15, md: 20 } }}>
           
-          {/* Kolom Kiri: Form Sign Up */}
+          {/* Inquiry options */}
           <Grid xs={12} md={5}>
             <m.div variants={varFade().inLeft}>
               <Box
+                id="pt-inquiry-options"
                 sx={{
                   p: 4,
+                  scrollMarginTop: 100,
                   borderRadius: 0, // Sharp
                   bgcolor: '#080808',
                   border: `1px solid ${alpha(RED, 0.2)}`,
                   boxShadow: `-20px 20px 60px -8px ${alpha(BLACK, 0.8)}`,
                 }}
               >
-                <Stack direction="row" alignItems="center" justifyContent="center" spacing={1.5} sx={{ mb: 2 }}>
-                    <Box sx={{ width: 20, height: 2, bgcolor: RED }} />
-                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: 4, textTransform: 'uppercase', color: RED, fontFamily: 'monospace' }}>
-                        {content.form_eyebrow}
-                    </Typography>
-                </Stack>
-                <Typography variant="h4" sx={{ mb: 1, fontWeight: 800, textAlign: 'center', fontFamily: "'Poppins', sans-serif", textTransform: 'uppercase', letterSpacing: -1 }}>
-                  {content.form_title} <br />
-                  <Box component="span" sx={{ color: RED, fontStyle: 'italic' }}>{content.form_title_highlight}</Box>
+                <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
+                  Personal Training Inquiries
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 4, textAlign: 'center', opacity: 0.6, fontFamily: 'monospace' }}>
-                  {content.form_description}
+                <Typography variant="body2" sx={{ mb: 3, color: alpha('#fff', 0.72) }}>
+                  Online PT requests are currently unavailable. Use the club directory to find a location to ask about training options.
                 </Typography>
-
-                <Stack spacing={2.5}>
-                  <TextField fullWidth label="First Name" variant="filled" sx={inputSx} />
-                  <TextField fullWidth label="Last Name" variant="filled" sx={inputSx} />
-                  <TextField fullWidth label="Email Address" variant="filled" sx={inputSx} />
-                  <TextField fullWidth label="Phone Number" variant="filled" sx={inputSx} />
-                  
-                  <FormControlLabel
-                    control={<Checkbox sx={{ color: alpha('#fff', 0.3), '&.Mui-checked': { color: RED } }} />}
-                    label={
-                      <Typography variant="caption" sx={{ opacity: 0.7, fontFamily: 'monospace' }}>
-                        I agree to the <span style={{ color: RED, textDecoration: 'underline' }}>Terms</span> and Data Privacy policy.
-                      </Typography>
-                    }
-                  />
-
-                  <Button
-                    fullWidth
-                    size="large"
-                    variant="contained"
-                    endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
-                    sx={{
-                      bgcolor: RED,
-                      color: '#fff',
-                      fontWeight: 800,
-                      py: 1.75,
-                      borderRadius: 0, // Sharp
-                      fontFamily: 'monospace',
-                      letterSpacing: 2,
-                      textTransform: 'uppercase',
-                      boxShadow: 'none',
-                      '&:hover': { bgcolor: RED_DARK, boxShadow: 'none' }
-                    }}
-                  >
-                    {content.form_button}
-                  </Button>
-                </Stack>
+                <Button
+                  component={InquiryInfoLink}
+                  href="/clubs"
+                  variant="contained"
+                  size="large"
+                  endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
+                  sx={{ borderRadius: 0, bgcolor: RED, '&:hover': { bgcolor: RED_DARK } }}
+                >
+                  View Club Directory
+                </Button>
               </Box>
             </m.div>
           </Grid>

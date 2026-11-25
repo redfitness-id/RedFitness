@@ -12,6 +12,8 @@ import { MotionViewport, varFade } from 'src/components/animate';
 // hooks
 import { useSectionContent } from 'src/hooks/use-page-content';
 
+import InquiryInfoLink from 'src/routes/components/inquiry-info-link';
+
 // ----------------------------------------------------------------------
 
 const RED = '#DF2026';
@@ -38,8 +40,8 @@ export default function PilatesPerformerPrograms() {
     tags: PROGRAM_TAGS[i],
   }));
   return (
-    <Box
-      sx={{
+    <Box id="pilates-programs"
+      sx={{ scrollMarginTop: 100,
         bgcolor: '#080808',
         py: { xs: 10, md: 15 },
         borderTop: `1px solid ${alpha(RED, 0.15)}`,
@@ -205,7 +207,7 @@ export default function PilatesPerformerPrograms() {
               variant="contained"
               size="large"
               endIcon={<Iconify icon="solar:arrow-right-up-bold" />}
-              href="/join/select-club"
+              disabled
               sx={{
                 bgcolor: RED,
                 color: '#fff',
@@ -224,6 +226,12 @@ export default function PilatesPerformerPrograms() {
               {content.cta_button}
             </Button>
           </m.div>
+          <Typography variant="body2" sx={{ mt: 2, color: alpha('#fff', 0.72) }}>
+            The club directory lists locations. Ask about Pilates availability before visiting.
+          </Typography>
+          <Button component={InquiryInfoLink} href="/clubs" variant="outlined" sx={{ mt: 2 }}>
+            View Club Directory
+          </Button>
         </Box>
       </Container>
     </Box>
