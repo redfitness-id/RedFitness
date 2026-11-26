@@ -28,3 +28,34 @@ test('encodes an inquiry message and keeps the original number intact', () => {
   assert.equal(url.searchParams.get('text'), 'Halo RED FITNESS Fixture Club, saya ingin mendapatkan informasi mengenai Membership.');
   assert.equal(fixture.phone, '0812 0000 0000');
 });
+
+test('maps all Marketing numbers and limits Pilates to the four eligible clubs', () => {
+  const expected = {
+    'Taman Palem': '6287717717731',
+    Bogor: '6287717717735',
+    'Kramat Jati': '6287717717760',
+    Cileungsi: '6287717717743',
+    Tambun: '6287717717702',
+    'Citra 8 JKT': '6281717717706',
+    'Green Pramuka Square': '6287717717785',
+    'Graha Raya Bintaro': '6287817717738',
+  };
+  for (const [service, label] of [['membership', 'Membership'], ['personalTraining', 'Personal Training']]) {
+    const clubs = eligibleClubs(service);
+    assert.deepEqual(clubs.map(club => club.name), Object.keys(expected));
+    for (const club of clubs) {
+      const url = new URL(whatsappUrl(club, service));
+      assert.equal(url.pathname, '/' + expected[club.name]);
+      assert.equal(url.searchParams.get('text'), `Halo RED FITNESS ${club.name}, saya ingin mendapatkan informasi mengenai ${label}.`);
+    }
+  }
+  const pilates = eligibleClubs('pilates');
+  assert.deepEqual(pilates.map(club => club.name), [
+    'Cileungsi', 'Citra 8 JKT', 'Green Pramuka Square', 'Graha Raya Bintaro',
+  ]);
+  for (const club of pilates) {
+    const url = new URL(whatsappUrl(club, 'pilates'));
+    assert.equal(url.pathname, '/' + expected[club.name]);
+    assert.ok(url.searchParams.get('text').endsWith('Pilates Performer.'));
+  }
+});

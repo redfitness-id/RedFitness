@@ -13,8 +13,17 @@ type ClubContact = {
   services: readonly Service[];
 };
 
-// Populate only from the approved Marketing workbook.
-export const clubContacts: readonly ClubContact[] = [];
+// Marketing workbook, WhatsApp per Klub. Confirm the example-labeled Taman Palem row before production.
+export const clubContacts: readonly ClubContact[] = [
+  { name: 'Taman Palem', phone: '0877 177 177 31', active: true, services: ['membership', 'personalTraining'] },
+  { name: 'Bogor', phone: '0877 177 177 35', active: true, services: ['membership', 'personalTraining'] },
+  { name: 'Kramat Jati', phone: '0877 177 177 60', active: true, services: ['membership', 'personalTraining'] },
+  { name: 'Cileungsi', phone: '0877 177 177 43', active: true, services: ['membership', 'personalTraining', 'pilates'] },
+  { name: 'Tambun', phone: '0877 177 177 02', active: true, services: ['membership', 'personalTraining'] },
+  { name: 'Citra 8 JKT', phone: '0817 177 177 06', active: true, services: ['membership', 'personalTraining', 'pilates'] },
+  { name: 'Green Pramuka Square', phone: '0877 177 177 85', active: true, services: ['membership', 'personalTraining', 'pilates'] },
+  { name: 'Graha Raya Bintaro', phone: '0878 177 177 38', active: true, services: ['membership', 'personalTraining', 'pilates'] },
+];
 
 export function normalizePhone(phone: string) {
   const compact = phone.trim().replace(/[\s()-]/g, '');
