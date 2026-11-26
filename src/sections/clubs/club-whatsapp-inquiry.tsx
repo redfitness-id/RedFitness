@@ -23,7 +23,14 @@ export default function ClubWhatsAppInquiry() {
     <Container component="section" maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
       <Stack spacing={2}>
         <Typography variant="h4" component="h2">Hubungi Klub via WhatsApp</Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Stack
+          spacing={{ xs: 2, sm: 0 }}
+          sx={{
+            display: { sm: 'grid' },
+            gridTemplateColumns: { sm: 'minmax(0, 1fr) minmax(0, 1fr) 180px' },
+            gap: { sm: 2 },
+          }}
+        >
           <TextField
             select
             fullWidth
@@ -52,7 +59,21 @@ export default function ClubWhatsAppInquiry() {
             ))}
           </TextField>
           {url && (
-            <Button variant="contained" href={url} target="_blank" rel="noopener noreferrer" sx={{ whiteSpace: 'nowrap' }}>
+            <Button
+              variant="contained"
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                whiteSpace: 'nowrap',
+                minHeight: { sm: 56 },
+                fontWeight: { sm: 700 },
+                '&.Mui-focusVisible': {
+                  outline: { sm: '2px solid currentColor' },
+                  outlineOffset: { sm: -4 },
+                },
+              }}
+            >
               Buka WhatsApp
             </Button>
           )}
