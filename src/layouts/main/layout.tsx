@@ -2,6 +2,7 @@
 import Box from '@mui/material/Box';
 // routes
 import { usePathname } from 'src/routes/hooks';
+import AnalyticsChoice from 'src/analytics/analytics-choice';
 //
 import Footer from './footer';
 import Header from './header';
@@ -35,6 +36,7 @@ export default function MainLayout({ children }: Props) {
       </Box>
 
       <StickyFreeTrial />
+      <AnalyticsChoice />
       <Footer />
     </Box>
   );

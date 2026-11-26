@@ -1,3 +1,5 @@
+const GTM_CONTAINER = 'GTM-KZL3DGV9';
+
 export const ANALYTICS_ORIGIN = 'https://www.redfitness.co.id';
 
 const pages: Record<string, string> = {
@@ -50,9 +52,8 @@ type Context = {
   campaign_medium: string;
 };
 
-export function approvedContainer(productionBuild: boolean, origin: string, enabled: unknown, id: unknown) {
-  return productionBuild && origin === ANALYTICS_ORIGIN && enabled === 'true'
-    && typeof id === 'string' && /^GTM-[A-Z0-9]+$/.test(id) ? id : undefined;
+export function approvedContainer(productionBuild: boolean, origin: string, enabled: unknown) {
+  return productionBuild && origin === ANALYTICS_ORIGIN && enabled === 'true' ? GTM_CONTAINER : undefined;
 }
 
 export function readCampaign(search: string) {
@@ -92,7 +93,7 @@ export function createAnalytics(publish: (payload: AnalyticsEvent) => void) {
     if (consent !== 'granted' || !context) return false;
     // A dropped analytics event must not interrupt navigation or a form.
     try {
-      publish({ event, ...context, cta_id: '', cta_location: '', club_id: '', form_id: '', error_code: '', ...fields });
+      publish({ event, ...context, cta_id: '', cta_location: '', club_id: '', club: '', service: '', form_id: '', error_code: '', ...fields });
       return true;
     } catch {
       return false;
@@ -157,6 +158,12 @@ export function createAnalytics(publish: (payload: AnalyticsEvent) => void) {
       if (!isWhatsAppUrl(destination)) return;
       emit('whatsapp_click', current, { club_id: getClubId(clubId), cta_location: 'home_whatsapp' });
     },
+    clubInquiryClick(destination: string, club: string, service: string) {
+      // These labels come from the Marketing routing configuration, never from
+      // user-entered fields. The destination is checked and never published.
+      if (!isWhatsAppUrl(destination) || current?.page_path !== '/clubs') return;
+      emit('whatsapp_click', current, { club, service, cta_location: 'club_directory' });
+    },
     formStart(formId: TrialForm) {
       return emit('form_start', current, { form_id: formId });
     },
@@ -170,7 +177,7 @@ export function createAnalytics(publish: (payload: AnalyticsEvent) => void) {
       return (outcome: FormOutcome) => {
         if (completed || revision !== consentRevision) return;
         completed = true;
-        if (outcome === 'success') emit('form_submit_success', context, fields);
+        if (outcome === 'success') emit('free_trial_submit_success', context);
         else emit('form_submit_error', context, { ...fields, error_code: outcome });
       };
     },

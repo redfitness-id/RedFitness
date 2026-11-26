@@ -37,6 +37,7 @@ const fixtureClub = { id: clubId, name: 'Synthetic Club', city: 'Fixture', whats
               import { createAnalytics } from '/src/analytics/events.ts';
               import { listenForAnalyticsConsent, CONSENT_EVENT } from '/src/analytics/consent.ts';
               window.__qaAnalytics = [];
+              export const isAnalyticsEnabled = () => false;
               export const analytics = createAnalytics(event => window.__qaAnalytics.push(event));
               listenForAnalyticsConsent(window, analytics.setConsent);
               if (new URLSearchParams(location.search).has('before_observer')) {
@@ -123,7 +124,7 @@ const fixtureClub = { id: clubId, name: 'Synthetic Club', city: 'Fixture', whats
     const inlineName = page.getByLabel('First Name *', { exact: true }).first();
     await inlineName.fill('Synthetic Firstname');
     await page.getByRole('button', { name: 'Claim My Free Week', exact: true }).click();
-    await waitForEvent('form_submit_success');
+    await waitForEvent('free_trial_submit_success');
     await page.getByText('TRY US FOR FREE', { exact: true }).click();
     const sticky = page.getByText('CLOSE', { exact: true }).locator('..');
     await sticky.getByLabel('First Name *', { exact: true }).fill('Synthetic Sticky');
@@ -170,7 +171,7 @@ const fixtureClub = { id: clubId, name: 'Synthetic Club', city: 'Fixture', whats
       assert.equal(await email.inputValue(), 'fixture@example.invalid');
       assert.equal(await submit.isDisabled(), true);
       assert.equal((await events()).at(-1).error_code, 'request_failed');
-      assert.equal((await events()).some((e) => e.event === 'form_submit_success'), false);
+      assert.equal((await events()).some((e) => e.event === 'free_trial_submit_success'), false);
     }
     assert.equal(simulatedPersistence, 1);
 
@@ -188,7 +189,7 @@ const fixtureClub = { id: clubId, name: 'Synthetic Club', city: 'Fixture', whats
     assert.deepEqual((await events()).filter((e) => e.event === 'page_view').map((e) => e.page_path), ['/', '/']);
     await releaseResponse();
     await page.getByRole('button', { name: 'Register Again', exact: false }).first().waitFor();
-    assert.equal((await events()).some((e) => e.event === 'form_submit_success' || e.event === 'form_submit_error'), false);
+    assert.equal((await events()).some((e) => e.event === 'free_trial_submit_success' || e.event === 'form_submit_error'), false);
     assert.deepEqual(external, []);
     console.log('PASS mocked browser: trial success, missing acknowledgment, transport error, possible persistence before mail error, consent replay/withdrawal/regrant and in-flight suppression');
   } finally {

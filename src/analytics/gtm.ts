@@ -23,14 +23,21 @@ let consent: 'granted' | 'denied' = 'denied';
 
 export const analytics = createAnalytics((event) => layer?.push(event));
 
-function setAnalyticsConsent(value: 'granted' | 'denied') {
-  if (value === consent) return;
-  const id = approvedContainer(
+function configuredContainer() {
+  return approvedContainer(
     import.meta.env.PROD,
     window.location.origin,
-    import.meta.env.VITE_GTM_ENABLED,
-    import.meta.env.VITE_GTM_CONTAINER_ID
+    import.meta.env.VITE_GTM_ENABLED
   );
+}
+
+export function isAnalyticsEnabled() {
+  return Boolean(configuredContainer());
+}
+
+function setAnalyticsConsent(value: 'granted' | 'denied') {
+  if (value === consent) return;
+  const id = configuredContainer();
   if (!id) return;
 
   if (value === 'denied') {

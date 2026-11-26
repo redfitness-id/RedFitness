@@ -12,13 +12,13 @@ function fixture() {
   return { analytics, events };
 }
 
-test('missing, malformed, preview and development GTM settings stay disabled', () => {
+test('only an opted-in production build on the canonical host can load the fixed container', () => {
+  assert.equal(approvedContainer(true, ANALYTICS_ORIGIN, 'true'), 'GTM-KZL3DGV9');
   for (const args of [
-    [true, ANALYTICS_ORIGIN, 'true', undefined],
-    [true, ANALYTICS_ORIGIN, 'true', 'invalid configuration'],
-    [true, 'https://preview.example.invalid', 'true', undefined],
-    [false, ANALYTICS_ORIGIN, 'true', undefined],
-    [true, ANALYTICS_ORIGIN, 'false', undefined],
+    [true, ANALYTICS_ORIGIN, undefined],
+    [true, 'https://preview.example.invalid', 'true'],
+    [false, ANALYTICS_ORIGIN, 'true'],
+    [true, ANALYTICS_ORIGIN, 'false'],
   ]) assert.equal(approvedContainer(...args), undefined);
 });
 
@@ -95,9 +95,9 @@ test('form completion is once per attempt, tied to its origin and consent window
   analytics.visit('/membership','');
   complete('success');
   complete('request_failed');
-  assert.equal(events.at(-1).event, 'form_submit_success');
+  assert.equal(events.at(-1).event, 'free_trial_submit_success');
   assert.equal(events.at(-1).page_path, '/');
-  assert.equal(events.at(-1).club_id, club);
+  assert.equal(events.at(-1).club_id, '');
   analytics.beginFormSubmit('sticky_free_trial', 'fixture@example.invalid')('unexpected_response');
   assert.equal(events.at(-1).event,'form_submit_error');
   assert.equal(events.at(-1).error_code,'unexpected_response');
@@ -106,7 +106,7 @@ test('form completion is once per attempt, tied to its origin and consent window
   analytics.setConsent('denied');
   analytics.setConsent('granted');
   revoked('success');
-  assert.equal(events.filter((e)=>e.event === 'form_submit_success').length, 1);
+  assert.equal(events.filter((e)=>e.event === 'free_trial_submit_success').length, 1);
   assert.equal(events.some((e)=>e.event === 'generate_lead'),false);
 });
 
@@ -138,4 +138,22 @@ test('consent listener accepts only explicit choices and works before route init
   send('granted');
   assert.equal(events.filter((e) => e.event === 'page_view').length, 2);
   stop();
+});
+
+test('one club inquiry click emits the selected club and service without link contents', () => {
+  const { analytics, events } = fixture();
+  const destination = 'https://wa.me/6287700000000?text=private-message';
+  analytics.visit('/clubs', '?email=person@example.invalid');
+  analytics.clubInquiryClick(destination, 'Citra 8 JKT', 'Pilates Performer');
+  assert.equal(events.length, 0);
+  analytics.setConsent('granted');
+  analytics.clubInquiryClick(destination, 'Citra 8 JKT', 'Pilates Performer');
+  const clicks = events.filter(item => item.event === 'whatsapp_click');
+  assert.equal(clicks.length, 1);
+  const { club: name, service, page_path: path } = clicks[0];
+  assert.deepEqual([name, service, path], ['Citra 8 JKT', 'Pilates Performer', '/clubs']);
+  assert.doesNotMatch(JSON.stringify(clicks), /6287700000000|private-message|example\.invalid/);
+  analytics.setConsent('denied');
+  analytics.clubInquiryClick(destination, 'Citra 8 JKT', 'Pilates Performer');
+  assert.equal(events.filter(item => item.event === 'whatsapp_click').length, 1);
 });

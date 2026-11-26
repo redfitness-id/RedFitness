@@ -6,6 +6,8 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
+import { analytics } from 'src/analytics/gtm';
+
 import { eligibleClubs, Service, services, whatsappUrl } from './whatsapp-routing';
 
 const availableServices = (Object.keys(services) as Service[]).filter(service => eligibleClubs(service).length);
@@ -58,10 +60,11 @@ export default function ClubWhatsAppInquiry() {
               <MenuItem key={contact.name} value={contact.name}>{contact.name}</MenuItem>
             ))}
           </TextField>
-          {url && (
+          {url && club && service && (
             <Button
               variant="contained"
               href={url}
+              onClick={() => analytics.clubInquiryClick(url, club.name, services[service])}
               target="_blank"
               rel="noopener noreferrer"
               sx={{
